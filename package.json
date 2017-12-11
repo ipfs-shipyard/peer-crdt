@@ -1,0 +1,30 @@
+{
+  "name": "peer-crdt",
+  "version": "0.1.0",
+  "description": "Peer CRDT",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "mocha test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pgte/peer-crdt.git"
+  },
+  "keywords": [
+    "CRDT",
+    "P2P",
+    "peer",
+    "decentralized"
+  ],
+  "author": "Pedro Teixeira <i@pgte.me>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/pgte/peer-crdt/issues"
+  },
+  "homepage": "https://github.com/pgte/peer-crdt#readme",
+  "devDependencies": {
+    "chai": "^4.1.2",
+    "dirty-chai": "^2.0.1",
+    "mocha": "^4.0.1"
+  }
+}
