@@ -43,9 +43,20 @@ describe('log', () => {
       })
     })
 
-    it('can stream entries', (done) => {
+    it('can stream all entries', (done) => {
       pull(
         log.since(),
+        pull.collect((err, entries) => {
+          expect(err).to.not.exist()
+          expect(entries).to.deep.equal([1, 2])
+          done()
+        })
+      )
+    })
+
+    it('can stream entries since', (done) => {
+      pull(
+        log.since('1'),
         pull.collect((err, entries) => {
           expect(err).to.not.exist()
           expect(entries).to.deep.equal([1, 2])

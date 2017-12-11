@@ -18,8 +18,8 @@ class Log {
     })
   }
 
-  since () {
-    return pull.values(this._entries.slice())
+  since (id) {
+    return pull.values(this._entries.slice(Number(id) - 1))
   }
 }
 
