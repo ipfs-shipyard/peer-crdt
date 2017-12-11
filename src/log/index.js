@@ -2,7 +2,7 @@
 
 module.exports = Log
 
-function Log(id) {
+function Log (id) {
   if (!id) {
     throw new Error('need log id')
   }
