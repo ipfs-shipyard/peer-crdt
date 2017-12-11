@@ -59,7 +59,7 @@ describe('log', () => {
         log.since('1'),
         pull.collect((err, entries) => {
           expect(err).to.not.exist()
-          expect(entries).to.deep.equal([1, 2])
+          expect(entries).to.deep.equal([2])
           done()
         })
       )
