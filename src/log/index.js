@@ -1,8 +1,21 @@
 'use strict'
 
-module.exports = Log
+class Log {
+  constructor (id) {
+    this._id = id
+    this._next = 0
+  }
 
-function Log (id) {
+  async append (entry) {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => resolve((++this._next).toString()), 1)
+    })
+  }
+}
+
+module.exports = createLog
+
+function createLog (id) {
   if (!id) {
     throw new Error('need log id')
   }
@@ -10,4 +23,6 @@ function Log (id) {
   if (typeof id !== 'string') {
     throw new Error('need log id to be a string')
   }
+
+  return new Log(id)
 }

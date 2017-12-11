@@ -9,7 +9,7 @@ chai.use(dirtyChai)
 const Log = require('../src/log')
 
 describe('log', () => {
-  describe('creation', () => {
+  describe('constructor', () => {
     it('cannot create log without an id', () => {
       expect(() => Log()).to.throw('need log id')
     })
@@ -20,6 +20,26 @@ describe('log', () => {
 
     it('can be created with a string id', () => {
       Log('some string')
+    })
+  })
+
+  describe('instance', () => {
+    let log
+
+    before(() => {
+      log = Log('a')
+    })
+
+    it('appends', () => {
+      return log.append(1).then((id) => {
+        expect(id).to.be.string('1')
+      })
+    })
+
+    it('appends again', () => {
+      return log.append(2).then((id) => {
+        expect(id).to.be.string('2')
+      })
     })
   })
 })
