@@ -1,15 +1,25 @@
 'use strict'
 
+const pull = require('pull-stream')
+
 class Log {
   constructor (id) {
     this._id = id
     this._next = 0
+    this._entries = []
   }
 
   async append (entry) {
     return new Promise((resolve, reject) => {
-      setTimeout(() => resolve((++this._next).toString()), 1)
+      setTimeout(() => {
+        this._entries.push(entry)
+        resolve((this._entries + 1).toString())
+      }, 1)
     })
+  }
+
+  since () {
+    return pull.values(this._entries.slice())
   }
 }
 

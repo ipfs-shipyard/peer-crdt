@@ -33,5 +33,8 @@
   "pre-commit": [
     "lint",
     "test"
-  ]
+  ],
+  "dependencies": {
+    "pull-stream": "^3.6.1"
+  }
 }

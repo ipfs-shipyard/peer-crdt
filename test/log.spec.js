@@ -5,6 +5,7 @@ const chai = require('chai')
 const dirtyChai = require('dirty-chai')
 const expect = chai.expect
 chai.use(dirtyChai)
+const pull = require('pull-stream')
 
 const Log = require('../src/log')
 
@@ -40,6 +41,17 @@ describe('log', () => {
       return log.append(2).then((id) => {
         expect(id).to.be.string('2')
       })
+    })
+
+    it('can stream entries', (done) => {
+      pull(
+        log.since(),
+        pull.collect((err, entries) => {
+          expect(err).to.not.exist()
+          expect(entries).to.deep.equal([1, 2])
+          done()
+        })
+      )
     })
   })
 })
