@@ -43,26 +43,35 @@ describe('log', () => {
       })
     })
 
-    it('can stream all entries', (done) => {
-      pull(
-        log.since(),
-        pull.collect((err, entries) => {
-          expect(err).to.not.exist()
-          expect(entries).to.deep.equal([1, 2])
-          done()
-        })
-      )
-    })
+    describe('streams entries', () => {
+      before(() => {
+        return Promise.all([
+          log.append(3),
+          log.append(4)
+        ])
+      })
 
-    it('can stream entries since', (done) => {
-      pull(
-        log.since('1'),
-        pull.collect((err, entries) => {
-          expect(err).to.not.exist()
-          expect(entries).to.deep.equal([2])
-          done()
-        })
-      )
+      it('can stream all entries', (done) => {
+        pull(
+          log.since(),
+          pull.collect((err, entries) => {
+            expect(err).to.not.exist()
+            expect(entries).to.deep.equal([1, 2, 3, 4])
+            done()
+          })
+        )
+      })
+
+      it('can stream entries since', (done) => {
+        pull(
+          log.since('2'),
+          pull.collect((err, entries) => {
+            expect(err).to.not.exist()
+            expect(entries).to.deep.equal([3, 4])
+            done()
+          })
+        )
+      })
     })
   })
 })
