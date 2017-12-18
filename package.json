@@ -35,6 +35,8 @@
     "test"
   ],
   "dependencies": {
+    "p-limit": "^1.1.0",
+    "pull-defer": "^0.2.2",
     "pull-stream": "^3.6.1"
   }
 }
