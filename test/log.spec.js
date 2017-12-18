@@ -123,14 +123,20 @@ describe('log', () => {
       })
     })
 
-    describe.skip('merge', () => {
+    describe('merge', () => {
       it('merges', (done) => {
         log.on('new head', (id) => {
-          console.log(id)
-          done()
+          pull(
+            log.all(),
+            pull.collect((err, results) => {
+              expect(err).to.not.exist()
+              expect(results).to.deep.equal([1, 2, '2.1', 3, 4, 5])
+              done()
+            })
+          )
         })
 
-        log.append(6, '4')
+        log.append('2.1', entryId)
       })
     })
   })

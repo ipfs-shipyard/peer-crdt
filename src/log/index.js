@@ -18,15 +18,22 @@ class Log extends EventEmitter {
   }
 
   async _append (value, parents) {
+    const head = await this._store.getHead()
     if (!parents) {
-      parents = await this._store.getHead()
+      parents = head
     }
     if (!Array.isArray(parents)) {
       parents = [parents]
     }
     parents = parents.filter(Boolean)
+
     const entry = [value, parents]
     const id = await this._store.put(entry)
+
+    const diverges = parents.length > 0 && parents.indexOf(head) === -1
+    if (diverges) {
+      return this._merge(id, head)
+    }
     this.emit('new head', id)
     return id
   }
@@ -36,16 +43,19 @@ class Log extends EventEmitter {
   }
 
   since (ancestorId, including) {
+    const visited = {}
+
     const ancestorStream = (id) => pull(
       pull.values([id]),
       pull.asyncMap((entryId, callback) => {
         this._isChildOf(ancestorId, entryId)
           .then((isChild) => {
-            if (isChild) {
-              callback(null, null)
-            } else {
-              callback(null, entryId)
+            const visit = !visited[entryId] && !isChild
+            if (visit) {
+              visited[entryId] = true
             }
+
+            callback(null, visit && entryId)
           })
           .catch((err) => {
             callback(err)
@@ -54,13 +64,13 @@ class Log extends EventEmitter {
       this._entryStream(),
       pull.map((entry) => {
         let value
-        if (entry.value && (including || entry.id !== ancestorId)) {
+        if (entry && entry.value !== null && (including || entry.id !== ancestorId)) {
           value = pull.values([entry.value])
         } else {
           value = pull.empty()
         }
 
-        if (!entry.parents.length) {
+        if (!entry || !entry.parents.length) {
           // leaf: return value
           return [value]
         }
@@ -76,7 +86,8 @@ class Log extends EventEmitter {
         return s
       }),
       pull.flatten(), // flatten array
-      pull.flatten() // flatten stream
+      pull.flatten(), // flatten stream
+      pull.filter((value) => value !== null)
     )
 
     const d = defer()
@@ -103,7 +114,7 @@ class Log extends EventEmitter {
           callback(null, {
             id: entryId,
             value: entry && entry[0],
-            parents: entry && (entry[1] || [])
+            parents: (entry && entry[1]) || []
           })
         })
         .catch(callback)
@@ -143,6 +154,10 @@ class Log extends EventEmitter {
 
   _getHead () {
     return this._limit(() => this._store.getHead())
+  }
+
+  _merge (a, b) {
+    return this._append(null, [a, b].sort())
   }
 }
 
