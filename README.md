@@ -45,7 +45,7 @@ If `including` is true, the stream also includes the entry for `lastKnownEntryId
 
 ## `log.all()`
 
-Gets all the logs. Alias for `log.since()`.
+Returns a pull-stream containing all the logs. Alias for `log.since()`.
 
 ## `async log.append(value[, author [, parentEntryIds(Array<String>)]])`
 
@@ -60,6 +60,29 @@ Appends an entry to the log. Returns a log entry Id.
 ## `log.on('new head', (logEntryId) => {})`
 
 Event emitted when a new log head is created.
+
+## `log.follow([since])`
+
+Returns a pull stream that streams all the logs since `since` (or since ever if `since` is not defined), and keeps emitting values every time there is an update.
+
+You can stop it if you want:
+
+```js
+const s = log.follow()
+
+pull(
+  s,
+  pull.map((entry) => {
+    console.log(entry)
+    return entry
+  }),
+  pull.onEnd((err) => {
+    console.log('ended', err)
+  })
+)
+
+setTimeout(() => s.end(), 10000)
+```
 
 
 # CRDT
