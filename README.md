@@ -25,13 +25,15 @@ A merge entry can be created given more than one log entry. This allows to conve
 
 Each log entry has an entryID, which is a hash of the content and links of the node. (Since each node has links to the parent node(s), it also makes it easy to prove, by traversal, that a given node is an ancestor of this other given node).
 
-## `Log(id)`
+## `Log(id, store, authenticateFn)`
 
 Returns a new log.
 
-`id` is a string uniquely identifying this log. If synchronizing between nodes, this id will be used to identify log replicas.
+* `id` is a string uniquely identifying this log. If synchronizing between nodes, this id will be used to identify log replicas.
+* `store` is an instance of [Store](#store).
+* `authenticateFn` is a function that authenticates each log entry has the following signature: `async function (value, parents)`.
 
-## `log.since([lastKnownEntryId])`
+## `log.since([lastKnownEntryId [, including]])`
 
 Returns a pull-stream that emits log entries that happened after the known entry id.
 
@@ -39,20 +41,13 @@ If no entryId is provided, it emits entries since the beginning of time.
 
 Note that this also emits `merge` log entries and the ancestors that are not a child of the given entryId (if any was given).
 
+If `including` is true, the stream also includes the entry for `lastKnownEntryId`.
+
 ## `log.all()`
 
 Gets all the logs. Alias for `log.since()`.
 
-## Log Entry
-
-A log entry (as emitted in the log streams) are objects with these attributes:
-
-* `value`: the value
-* `parents`: an array containing the parent ids for this entry
-* `author`: the author node for this entry
-
-
-## `async log.append(entry, parentEntryIds)`
+## `async log.append(value[, author [, parentEntryIds(Array<String>)]])`
 
 Appends an entry to the log. Returns a log entry Id.
 
@@ -166,3 +161,16 @@ Here are the options for the `CRDT.create` and composed CRDT constructor are:
 
 * `network`: a network plugin constructor. Should be a function with the following signature: `function (log) {}`
 * `store`: an implementation of the `Log` interface
+
+## Entities
+
+### Log Entry
+
+A log entry (as emitted in the log streams) are objects with these attributes:
+
+* `id`: the id of the entry (string)
+* `value`: the value, arbitrary
+* `parents`: an array containing the parent ids for this entry
+* `auth`: the authentication data
+
+

@@ -4,20 +4,26 @@ const EventEmitter = require('events')
 const pull = require('pull-stream')
 const pLimit = require('p-limit')
 const defer = require('pull-defer').source
+const once = require('once')
 
 class Log extends EventEmitter {
-  constructor (id, store) {
+  constructor (id, store, authenticateFn) {
     super()
     this._id = id
     this._store = store
+    this._authenticateFn = authenticateFn
     this._limit = pLimit(1)
   }
 
-  append (value, parents) {
-    return this._limit(() => this._append(value, parents))
+  append (value, auth, parents) {
+    return this._limit(() => this._append(value, auth, parents))
   }
 
-  async _append (value, parents) {
+  async _append (value, auth, parents) {
+    if (!auth) {
+      auth = await this._authenticateFn(value, parents)
+    }
+
     const head = await this._store.getHead()
     if (!parents) {
       parents = head
@@ -27,7 +33,7 @@ class Log extends EventEmitter {
     }
     parents = parents.filter(Boolean)
 
-    const entry = [value, parents]
+    const entry = [value, auth, parents]
     const id = await this._store.put(entry)
 
     const diverges = parents.length > 0 && parents.indexOf(head) === -1
@@ -47,7 +53,8 @@ class Log extends EventEmitter {
 
     const ancestorStream = (id) => pull(
       pull.values([id]),
-      pull.asyncMap((entryId, callback) => {
+      pull.asyncMap((entryId, _callback) => {
+        const callback = once(_callback)
         this._isChildOf(ancestorId, entryId)
           .then((isChild) => {
             const visit = !visited[entryId] && !isChild
@@ -55,17 +62,17 @@ class Log extends EventEmitter {
               visited[entryId] = true
             }
 
-            callback(null, visit && entryId)
+            setImmediate(() => callback(null, visit && entryId))
           })
           .catch((err) => {
-            callback(err)
+            setImmediate(() => callback(err))
           })
       }),
       this._entryStream(),
       pull.map((entry) => {
         let value
         if (entry && entry.value !== null && (including || entry.id !== ancestorId)) {
-          value = pull.values([entry.value])
+          value = pull.values([entry])
         } else {
           value = pull.empty()
         }
@@ -86,19 +93,20 @@ class Log extends EventEmitter {
         return s
       }),
       pull.flatten(), // flatten array
-      pull.flatten(), // flatten stream
-      pull.filter((value) => value !== null)
+      pull.flatten()  // flatten stream
     )
 
     const d = defer()
 
     this._store.getHead()
       .then((head) => {
-        if (!head) {
-          d.resolve(pull.empty())
-        } else {
-          d.resolve(ancestorStream(head))
-        }
+        setImmediate(() => {
+          if (!head) {
+            d.resolve(pull.empty())
+          } else {
+            d.resolve(ancestorStream(head))
+          }
+        })
       })
       .catch((err) => {
         d.abort(err)
@@ -108,13 +116,15 @@ class Log extends EventEmitter {
   }
 
   _entryStream () {
-    return pull.asyncMap((entryId, callback) => {
+    return pull.asyncMap((entryId, _callback) => {
+      const callback = once(_callback)
       this._store.get(entryId)
         .then((entry) => {
           callback(null, {
             id: entryId,
             value: entry && entry[0],
-            parents: (entry && entry[1]) || []
+            auth: entry && entry[1],
+            parents: (entry && entry[2]) || []
           })
         })
         .catch(callback)
@@ -124,8 +134,7 @@ class Log extends EventEmitter {
   _entryValueSourceStream (id) {
     return pull(
       pull.values([id]),
-      this._entryStream(),
-      pull.map((entry) => entry.value)
+      this._entryStream()
     )
   }
 
@@ -139,7 +148,7 @@ class Log extends EventEmitter {
       return false
     }
 
-    const parents = ancestor[1]
+    const parents = ancestor[2]
     if (!parents.length) {
       return false
     }
@@ -157,13 +166,13 @@ class Log extends EventEmitter {
   }
 
   _merge (a, b) {
-    return this._append(null, [a, b].sort())
+    return this._append(null, null, [a, b].sort())
   }
 }
 
 module.exports = createLog
 
-function createLog (id, store) {
+function createLog (id, store, authenticate) {
   if (!id) {
     throw new Error('need log id')
   }
@@ -176,5 +185,9 @@ function createLog (id, store) {
     throw new Error('need log store')
   }
 
-  return new Log(id, store)
+  if (typeof authenticate !== 'function') {
+    throw new Error('need authentication function')
+  }
+
+  return new Log(id, store, authenticate)
 }
