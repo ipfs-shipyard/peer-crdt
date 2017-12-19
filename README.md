@@ -160,9 +160,9 @@ Any change in a nested object will trigger a `change` event in the container CRD
 Here are the options for the `CRDT.create` and composed CRDT constructor are:
 
 * `network`: a network plugin constructor. Should be a function with the following signature: `function (log) {}`
-* `store`: an implementation of the `Log` interface
+* `store`: an implementation of the `Store` interface
 
-## Entities
+## Types
 
 ### Log Entry
 
@@ -174,3 +174,11 @@ A log entry (as emitted in the log streams) are objects with these attributes:
 * `auth`: the authentication data
 
 
+### Store
+
+A store instance should expose the following methods:
+
+* `async put (entry)`: puts an arbitrary JS object and resolves to a unique identifier for that object. The same object should generate the exact same id.
+* `async get (id)`: gets an object from the store.
+* `async setHead(id)`: stores the current head (string).
+* `async getHead()`: retrieves the current head.

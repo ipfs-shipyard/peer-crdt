@@ -4,6 +4,8 @@ const EventEmitter = require('events')
 const pull = require('pull-stream')
 const pLimit = require('p-limit')
 const defer = require('pull-defer').source
+const pushable = require('pull-pushable')
+const through = require('pull-through')
 const once = require('once')
 
 class Log extends EventEmitter {
@@ -98,7 +100,7 @@ class Log extends EventEmitter {
 
     const d = defer()
 
-    this._store.getHead()
+    this._getHead()
       .then((head) => {
         setImmediate(() => {
           if (!head) {
@@ -108,11 +110,70 @@ class Log extends EventEmitter {
           }
         })
       })
-      .catch((err) => {
-        d.abort(err)
-      })
+      .catch((err) => d.abort(err))
 
     return d
+  }
+
+  follow (since) {
+    let last
+    let hasMore = false
+    let stopped = false
+    const p = pushable()
+
+    const track = pull.map((entry) => {
+      last = entry.id
+      return entry
+    })
+
+    const onNewHead = () => {
+      hasMore = true
+    }
+    this.on('new head', onNewHead)
+
+    const pullSince = (since) => {
+      pull(
+        this.since(since),
+        through(
+          (entry) => {
+            p.push(entry)
+          },
+          (end) => {
+            if (hasMore) {
+              hasMore = false
+              pullSince(last)
+            } else {
+              if (!stopped) {
+                this.once('new head', () => {
+                  if (!stopped) {
+                    pullSince(last)
+                  }
+                })
+              }
+              this.push(end)
+            }
+          }
+        ),
+        pull.onEnd((err) => {
+          p.end(err)
+        })
+      )
+    }
+
+    pullSince(since)
+
+    const retPull = pull(
+      p,
+      track
+    )
+
+    retPull.end = () => {
+      stopped = true
+      this.removeListener('new head', onNewHead)
+      p.end()
+    }
+
+    return retPull
   }
 
   _entryStream () {

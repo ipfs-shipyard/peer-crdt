@@ -2,7 +2,7 @@
   "name": "peer-crdt",
   "version": "0.1.0",
   "description": "Peer CRDT",
-  "main": "src/index.js",
+  "main": "src/crdt/index.js",
   "scripts": {
     "test": "mocha test",
     "lint": "standard"
@@ -38,6 +38,8 @@
     "once": "^1.4.0",
     "p-limit": "^1.1.0",
     "pull-defer": "^0.2.2",
-    "pull-stream": "^3.6.1"
+    "pull-pushable": "^2.1.1",
+    "pull-stream": "^3.6.1",
+    "pull-through": "^1.0.18"
   }
 }
