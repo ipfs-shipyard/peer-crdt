@@ -28,5 +28,7 @@ exports.create = function create (typeName, id, options) {
 }
 
 exports.defaults = function defaults (defaultOptions) {
-  return (type, id, options) => exports.create(type, id, Object.assign({}, defaultOptions, options))
+  return {
+    create: (type, id, options) => exports.create(type, id, Object.assign({}, defaultOptions, options))
+  }
 }

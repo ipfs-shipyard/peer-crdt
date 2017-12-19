@@ -11,7 +11,7 @@ const CRDT = require('../')
 const gCounter = require('./helpers/g-counter-type')
 
 describe('CRDT', () => {
-  let konstructor
+  let myCRDT
   let crdt
 
   it('can define a CRDT type', () => {
@@ -19,22 +19,22 @@ describe('CRDT', () => {
   })
 
   it('can create a constructor with default options', () => {
-    konstructor = CRDT.defaults({
+    myCRDT = CRDT.defaults({
       store: new Store('test'),
       authenticate: (entry, parents) => {}
     })
   })
 
   it('unknown type throws', () => {
-    expect(() => konstructor('unknown')).to.throw('unknown type unknown')
+    expect(() => myCRDT.create('unknown')).to.throw('unknown type unknown')
   })
 
   it('need id', () => {
-    expect(() => konstructor('g-counter')).to.throw('need id')
+    expect(() => myCRDT.create('g-counter')).to.throw('need id')
   })
 
   it('can create crdt', () => {
-    crdt = konstructor('g-counter', 'test')
+    crdt = myCRDT.create('g-counter', 'test')
   })
 
   it('value starts at 0', () => {
