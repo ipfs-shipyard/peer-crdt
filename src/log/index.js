@@ -46,6 +46,18 @@ class Log extends EventEmitter {
     return id
   }
 
+  async has (id) {
+    const head = await this._getHead()
+    if (head === id) {
+      return true
+    }
+    return this._isChildOf(head, id)
+  }
+
+  get (id) {
+    return this._store.get(id)
+  }
+
   all () {
     return this.since()
   }
