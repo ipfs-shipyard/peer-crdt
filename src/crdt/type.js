@@ -16,10 +16,11 @@ module.exports = (log, type) => {
   }
 
   const mutators = type[2] || {}
+  const methods = {}
   Object.keys(mutators).forEach((mutatorName) => {
     // generate a mutator function to wrap the CRDT message generator
     const mutator = mutators[mutatorName]
-    mutators[mutatorName] = function () {
+    methods[mutatorName] = function () {
       const message = mutator.apply(null, arguments)
       log.append(message)
     }
@@ -27,7 +28,8 @@ module.exports = (log, type) => {
 
   let value = initialValue()
 
-  const self = Object.assign(new EventEmitter(), mutators, {
+  const self = Object.assign(new EventEmitter(), methods, {
+    _isPeerCRDT: true,
     value () {
       return value
     }

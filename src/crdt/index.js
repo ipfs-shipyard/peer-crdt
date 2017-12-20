@@ -35,11 +35,11 @@ function create (typeName, id, options) {
     throw new Error('need id')
   }
 
-  const log = Log(id, options.store, options.authenticate)
+  const log = Log(id, options.store(id), options.authenticate)
 
   return Type(log, type)
 }
 
 function compose (schema, options) {
-  return Compose(schema, options)
+  return Compose(create, schema, options)
 }

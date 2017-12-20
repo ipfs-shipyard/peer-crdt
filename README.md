@@ -79,7 +79,7 @@ Any change in a nested object will trigger a `change` event in the container CRD
 Here are the options for the `CRDT.create` and composed CRDT constructor are:
 
 * `network`: a network plugin constructor. Should be a function with the following signature: `function (log) {}`
-* `store`: an implementation of the `Store` interface
+* `store`: a constructor function with thw following signature: `function (id)`, which returns an implementation of the `Store` interface
 
 
 ## Types
