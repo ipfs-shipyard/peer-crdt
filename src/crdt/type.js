@@ -4,7 +4,7 @@ const pull = require('pull-stream')
 const EventEmitter = require('events')
 const deepEqual = require('deep-equal')
 
-module.exports = (type, log) => {
+module.exports = (type, log, network) => {
   const initialValue = type[0]
   if (typeof initialValue !== 'function') {
     throw new Error('type should have an initial value function')
@@ -30,6 +30,7 @@ module.exports = (type, log) => {
 
   const self = Object.assign(new EventEmitter(), methods, {
     _isPeerCRDT: true,
+    network: network,
     value () {
       return value
     }

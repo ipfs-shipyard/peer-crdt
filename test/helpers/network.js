@@ -42,7 +42,7 @@ class Network {
     const wantId = JSON.parse(message)
     const has = await this._log.has(wantId)
     if (has) {
-      const entry = this._log.get(wantId)
+      const entry = await this._log.get(wantId)
       if (entry) {
         virtualNetwork.broadcast(wantId, JSON.stringify(entry))
       }

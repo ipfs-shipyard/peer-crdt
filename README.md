@@ -65,14 +65,28 @@ const schema = [
 ]
 ```
 
-You can then compose these at will, like, for instance:
+Any change in a nested object will trigger a `change` event in the container CRDT.
 
-```js
-const myOrSet = CRDT.create('ORSet', id)
-myCrdtInstance.a.add(myOrSet)
+You can then get the current value by doing:
+
+```
+const value = myCrdtInstance.value()
 ```
 
-Any change in a nested object will trigger a `change` event in the container CRDT.
+Full example:
+
+```js
+const schema = {
+  a: 'G-Set',
+  b: 'LWW-Set'
+}
+const MyCRDT = CRDT.compose(schema)
+const myCrdtInstance = MyCRDT(id)
+
+myCrdtInstance.on('change', () => {
+  console.log('new value:', myCrdtInstance.value())
+})
+```
 
 ## Options
 

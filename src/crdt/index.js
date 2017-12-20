@@ -40,7 +40,7 @@ function create (typeName, id, options) {
   }
 
   const log = Log(id, options.store(id), options.authenticate)
-  const network = options.network(id)
+  const network = options.network(id, log)
 
   return Type(type, log, network)
 }

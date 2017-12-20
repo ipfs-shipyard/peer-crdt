@@ -9,6 +9,7 @@ module.exports = function compose (create, schema, options) {
 
   function createInstance (id) {
     const instance = new EventEmitter()
+    const networks = []
     Object.keys(schema).forEach((key) => {
       const path = id + '/' + key
       let value = schema[key]
@@ -17,11 +18,16 @@ module.exports = function compose (create, schema, options) {
       } else {
         value = create(value, path, options)
       }
+      networks.push(value.network)
       value.on('change', () => setImmediate(() => instance.emit('change')))
       instance[key] = value
     })
 
     instance.value = () => extractValue(schema, instance)
+    instance.network = {
+      start: () => Promise.all(networks.map((network) => network.start())),
+      stop: () => Promise.all(networks.map((network) => network.stop()))
+    }
 
     return instance
   }
