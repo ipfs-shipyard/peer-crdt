@@ -4,7 +4,7 @@ const pull = require('pull-stream')
 const EventEmitter = require('events')
 const deepEqual = require('deep-equal')
 
-module.exports = (log, type) => {
+module.exports = (type, log) => {
   const initialValue = type[0]
   if (typeof initialValue !== 'function') {
     throw new Error('type should have an initial value function')

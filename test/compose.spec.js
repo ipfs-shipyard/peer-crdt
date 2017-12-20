@@ -7,6 +7,7 @@ const expect = chai.expect
 chai.use(dirtyChai)
 
 const Store = require('./helpers/store')
+const Network = require('./helpers/network')
 const CRDT = require('../')
 const gCounter = require('./helpers/g-counter-type')
 
@@ -20,6 +21,7 @@ describe('CRDT', () => {
   before(() => {
     myCRDT = CRDT.defaults({
       store: (id) => new Store(id),
+      network: (id) => new Network(id),
       authenticate: (entry, parents) => 'authentication for ' + entry
     })
   })

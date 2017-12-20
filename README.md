@@ -78,7 +78,7 @@ Any change in a nested object will trigger a `change` event in the container CRD
 
 Here are the options for the `CRDT.create` and composed CRDT constructor are:
 
-* `network`: a network plugin constructor. Should be a function with the following signature: `function (log) {}`
+* `network`: a network plugin constructor. Should be a function with the following signature: `function (log)` and return an instance of [`Network`](#network)
 * `store`: a constructor function with thw following signature: `function (id)`, which returns an implementation of the `Store` interface
 
 
@@ -92,6 +92,10 @@ A store instance should expose the following methods:
 * `async get (id)`: gets an object from the store.
 * `async setHead(id)`: stores the current head (string).
 * `async getHead()`: retrieves the current head.
+
+### Network
+
+PENDING: DEFINE NETWORK INTERFACE
 
 # Extending
 

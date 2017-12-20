@@ -35,9 +35,14 @@ function create (typeName, id, options) {
     throw new Error('need id')
   }
 
-  const log = Log(id, options.store(id), options.authenticate)
+  if (!options || !options.network) {
+    throw new Error('need options.network')
+  }
 
-  return Type(log, type)
+  const log = Log(id, options.store(id), options.authenticate)
+  const network = options.network(id)
+
+  return Type(type, log, network)
 }
 
 function compose (schema, options) {
