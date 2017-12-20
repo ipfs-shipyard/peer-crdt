@@ -39,7 +39,8 @@ describe('networking', () => {
   it('can create two connected crdts', () => {
     instances = [
       crdt.create('networked-id'),
-      crdt.create('networked-id')
+      crdt.create('networked-id'),
+      crdt.create('networked-different-id')
     ]
   })
 
@@ -58,6 +59,10 @@ describe('networking', () => {
       })
       done()
     })
+
+    // nothing should happen in third instance because of different id
+    instances[2].once('change', () => { throw new Error('should not change') })
+
     instances[0].a.increment()
   })
 
@@ -72,6 +77,7 @@ describe('networking', () => {
       })
       done()
     })
+    instances[2].once('change', () => { throw new Error('should not change') })
     instances[1].c.d.increment()
   })
 
