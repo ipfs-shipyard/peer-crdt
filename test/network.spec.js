@@ -11,7 +11,7 @@ const Network = require('./helpers/network')
 const CRDT = require('../')
 const gCounter = require('./helpers/g-counter-type')
 
-describe('CRDT', () => {
+describe('networking', () => {
   let myCRDT
   let crdt
   let instances
