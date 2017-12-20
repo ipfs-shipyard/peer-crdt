@@ -17,9 +17,7 @@ module.exports = function compose (create, schema, options) {
       } else {
         value = create(value, path, options)
       }
-      value.on('change', () => {
-        setImmediate(() => instance.emit('change'))
-      })
+      value.on('change', () => setImmediate(() => instance.emit('change')))
       instance[key] = value
     })
 
