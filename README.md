@@ -91,21 +91,28 @@ A collection of CRDTs that use the log structure above.
 
 Allows to register new CRDT types
 
-## `CRDT.define(name, constructorFunction)`
+## `CRDT.define(name, definition)`
 
-Defines a new CRDT type with a given name and constructor function.
+Defines a new CRDT type with a given name and definition.
 
-The construtor function has the following signature:
+The definition is an array with the following positions:
+
+* 0: a function which returns the initial value
+* 1: a function that accepts a message and the previous value and returns the new value
+* 2: an object containing named mutator functions, which should return the generated message for each mutation
+
+Example of a G-Counter:
 
 ```js
-function createMyCRDT(log) {
-  ...
-}
+[
+  () => 0, // initial value
+  (message, previousValue) => message + previousValue, // process message
+  {
+    // mutator functions, which generate messages:
+    increment: () => 1
+  }
+]
 ```
-
-This constructor should return an object that implements the CRDT interface (described below).
-
-`log` is an instance of the `Log` class described above.
 
 ## `CRDT.defaults(options)`
 
