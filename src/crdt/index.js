@@ -1,6 +1,8 @@
 'use strict'
 
 const Log = require('../log')
+const Compose = require('./compose')
+const Type = require('./type')
 
 const types = {}
 
@@ -24,11 +26,17 @@ exports.create = function create (typeName, id, options) {
 
   const log = Log(id, options.store, options.authenticate)
 
-  return type(log)
+  return Type(log, type)
 }
 
 exports.defaults = function defaults (defaultOptions) {
   return {
-    create: (type, id, options) => exports.create(type, id, Object.assign({}, defaultOptions, options))
+    create: (type, id, options) => exports.create(type, id, Object.assign({}, defaultOptions, options)),
+    compose: (schema, options) => exports.compose(schema, Object.assign({}, defaultOptions, options)),
+    defaults: (moreDefaults) => exports.defaults(Object.assign({}, defaultOptions, moreDefaults))
   }
+}
+
+exports.compose = function compose (schema, options) {
+  return Compose(schema, options)
 }

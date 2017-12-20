@@ -21,7 +21,7 @@ describe('CRDT', () => {
   it('can create a constructor with default options', () => {
     myCRDT = CRDT.defaults({
       store: new Store('test'),
-      authenticate: (entry, parents) => {}
+      authenticate: (entry, parents) => 'authentication for ' + entry
     })
   })
 
