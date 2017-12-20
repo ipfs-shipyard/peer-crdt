@@ -6,7 +6,18 @@ const Type = require('./type')
 
 const types = {}
 
-exports.define = function define (name, constructorFn) {
+module.exports = defaults()
+
+function defaults (defaultOptions) {
+  return {
+    define: define,
+    create: (type, id, options) => create(type, id, Object.assign({}, defaultOptions, options)),
+    compose: (schema, options) => compose(schema, Object.assign({}, defaultOptions, options)),
+    defaults: (moreDefaults) => defaults(Object.assign({}, defaultOptions, moreDefaults))
+  }
+}
+
+function define (name, constructorFn) {
   if (types.hasOwnProperty(name)) {
     throw new Error('already defined ' + name)
   }
@@ -14,7 +25,7 @@ exports.define = function define (name, constructorFn) {
   types[name] = constructorFn
 }
 
-exports.create = function create (typeName, id, options) {
+function create (typeName, id, options) {
   const type = types[typeName]
   if (!type) {
     throw new Error('unknown type ' + typeName)
@@ -29,14 +40,6 @@ exports.create = function create (typeName, id, options) {
   return Type(log, type)
 }
 
-exports.defaults = function defaults (defaultOptions) {
-  return {
-    create: (type, id, options) => exports.create(type, id, Object.assign({}, defaultOptions, options)),
-    compose: (schema, options) => exports.compose(schema, Object.assign({}, defaultOptions, options)),
-    defaults: (moreDefaults) => exports.defaults(Object.assign({}, defaultOptions, moreDefaults))
-  }
-}
-
-exports.compose = function compose (schema, options) {
+function compose (schema, options) {
   return Compose(schema, options)
 }
