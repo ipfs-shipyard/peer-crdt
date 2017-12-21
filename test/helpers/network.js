@@ -3,32 +3,32 @@
 const virtualNetwork = require('./virtual-network')
 const pLimit = require('p-limit')
 
+const DEFAULT_BROADCAST_FREQ = 200
+
 class Network {
   constructor (id, log, broadcastFrequency) {
     this._id = id
     this._log = log
-    this._broadcastFrequency = broadcastFrequency
+    this._broadcastFrequency = broadcastFrequency || DEFAULT_BROADCAST_FREQ
+
     this._head = undefined
 
     this._limit = pLimit(1)
 
-    this.onNewHead = this.onNewHead.bind(this)
     this.onMessage = this.onMessage.bind(this)
     this.onWant = this.onWant.bind(this)
   }
 
   async start () {
-    this._head = await this._log.getHead()
-    this._log.on('new head', this.onNewHead)
     virtualNetwork.on(this._id, this.onMessage)
     virtualNetwork.on('want', this.onWant)
-    this._broadcastHeadInterval = setInterval(() => this.broadcastHead.bind(this), this._broadcastFrequencym || 200)
+    this._broadcastHeadInterval = setInterval(() => this.broadcastHead.bind(this), this._broadcastFrequency)
     this.broadcastHead()
   }
 
-  onNewHead (head) {
+  setHead (head) {
     this._head = head
-    this.broadcast(head)
+    this.broadcastHead()
   }
 
   broadcastHead () {
@@ -87,7 +87,6 @@ class Network {
   }
 
   async stop () {
-    this._log.removeListener('new head', this.onNewHead)
     virtualNetwork.removeListener(this._id, this.onMessage)
     virtualNetwork.on('want', this.onWant)
     clearInterval(this._broadcastHeadInterval)

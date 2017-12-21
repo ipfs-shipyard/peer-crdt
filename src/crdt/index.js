@@ -3,6 +3,7 @@
 const Log = require('../log')
 const Compose = require('./compose')
 const Type = require('./type')
+const Network = require('./network')
 
 const types = {}
 
@@ -40,7 +41,7 @@ function create (typeName, id, options) {
   }
 
   const log = Log(id, options.store(id), options.authenticate)
-  const network = options.network(id, log)
+  const network = Network(id, log, options.network)
 
   return Type(type, log, network)
 }
