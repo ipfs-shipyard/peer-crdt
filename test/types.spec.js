@@ -61,7 +61,7 @@ describe('types', () => {
     })
   })
 
-  describe.only('pn-counter', () => {
+  describe('pn-counter', () => {
     let instances
 
     before(() => {
