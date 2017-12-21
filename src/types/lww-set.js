@@ -8,6 +8,7 @@ module.exports = {
     }
     return previousMap
   }),
+
   valueOf: (state) => {
     const adds = Array.from(state[0].entries())
     const removes = state[1]
@@ -19,6 +20,7 @@ module.exports = {
       })
       .map((add) => add[0])
   },
+
   mutators: {
     add: (elem) => [[timestamp(), elem], null],
     remove: (elem) => [null, [timestamp(), elem]]
