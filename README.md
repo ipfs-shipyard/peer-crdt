@@ -119,23 +119,22 @@ Allows you to define new CRDT types.
 
 Defines a new CRDT type with a given name and definition.
 
-The definition is an array with the following positions:
+The definition is an object with the following attributes:
 
-* 0: a function which returns the initial value
-* 1: a function that accepts a message and the previous value and returns the new value
-* 2: an object containing named mutator functions, which should return the generated message for each mutation
+* first: a function that returns the initial value
+* reduce: a function that accepts a message and the previous value and returns the new value
+* mutators: an object containing named mutator functions, which should return the generated message for each mutation
 
 Example of a G-Counter:
 
 ```js
-[
-  () => 0, // initial value
-  (message, previousValue) => message + previousValue, // process message
-  {
-    // mutator functions, which generate messages:
+{
+  first: () => 0,
+  reduce: (message, previous) => message + previous,
+  mutators: {
     increment: () => 1
   }
-]
+}
 ```
 
 

@@ -1,13 +1,9 @@
 'use strict'
 
-module.exports = [
-  function initialValue () {
-    return 0
-  },
-  function newValueFromMessage (message, previousValue) {
-    return message + previousValue
-  },
-  {
+module.exports = {
+  first: () => 0,
+  reduce: (message, previous) => message + previous,
+  mutators: {
     increment: () => 1
   }
-]
+}

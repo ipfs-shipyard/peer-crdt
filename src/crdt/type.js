@@ -5,17 +5,15 @@ const EventEmitter = require('events')
 const deepEqual = require('deep-equal')
 
 module.exports = (type, log, network) => {
-  const initialValue = type[0]
-  if (typeof initialValue !== 'function') {
-    throw new Error('type should have an initial value function')
+  if (typeof type.first !== 'function') {
+    throw new Error('type should have a .first function')
   }
 
-  const newValueFromMessage = type[1]
-  if (typeof newValueFromMessage !== 'function') {
-    throw new Error('type should have a function to compute new value from message')
+  if (typeof type.reduce !== 'function') {
+    throw new Error('type should have a .reduce function')
   }
 
-  const mutators = type[2] || {}
+  const mutators = type.mutators || {}
   const methods = {}
   Object.keys(mutators).forEach((mutatorName) => {
     // generate a mutator function to wrap the CRDT message generator
@@ -26,7 +24,7 @@ module.exports = (type, log, network) => {
     }
   })
 
-  let value = initialValue()
+  let value = type.first()
 
   const self = Object.assign(new EventEmitter(), methods, {
     _isPeerCRDT: true,
@@ -40,7 +38,7 @@ module.exports = (type, log, network) => {
     log.follow(),
     pull.map((entry) => {
       if (entry.hasOwnProperty('value')) {
-        const newValue = newValueFromMessage(entry.value, value)
+        const newValue = type.reduce(entry.value, value)
         if (!deepEqual(newValue, value)) {
           value = newValue
           self.emit('change')
