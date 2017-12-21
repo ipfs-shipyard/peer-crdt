@@ -36,14 +36,15 @@ function createNetworkWrapper (id, log, createNetwork) {
   const onRemoteHead = (remoteHead) => limit(() => _onRemoteHead(remoteHead))
 
   const network = createNetwork(id, log, onRemoteHead)
+
   return {
     async start () {
       await network.start()
+      log.on('new head', (head) => network.setHead(head))
       const head = await log.getHead()
       if (head) {
         network.setHead(head)
       }
-      log.on('new head', (head) => network.setHead(head))
     },
 
     stop () {
