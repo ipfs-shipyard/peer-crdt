@@ -96,33 +96,6 @@ Here are the options for the `CRDT.create` and composed CRDT constructor are:
 * `store`: a constructor function with thw following signature: `function (id)`, which returns an implementation of the `Store` interface
 
 
-## Types
-
-### Store
-
-A store instance should expose the following methods:
-
-* `async empty ()`: resovles to a boolean indicating if this store has no entries
-* `async put (entry)`: puts an arbitrary JS object and resolves to a unique identifier for that object. The same object should generate the exact same id.
-* `async get (id)`: gets an object from the store. Resolves to `undefined` if entry couldn't be found.
-* `async setHead(id)`: stores the current head (string).
-* `async getHead()`: retrieves the current head.
-
-### Network
-
-A network constructor should return a network instance and have the following signature:
-
-```js
-function createNetwork(id, log) {
-  return new SomeKindOfNetwork()
-}
-```
-
-A network instance should expose the following interface:
-
-* `async start()`: starts the network
-* `async stop()`: stops the network
-
 # Built-in types
 
 The following types are built-in:
@@ -155,6 +128,37 @@ Example of a G-Counter:
   }
 }
 ```
+
+## Types
+
+### Store
+
+A store instance should expose the following methods:
+
+* `async empty ()`: resovles to a boolean indicating if this store has no entries
+* `async put (entry)`: puts an arbitrary JS object and resolves to a unique identifier for that object. The same object should generate the exact same id.
+* `async get (id)`: gets an object from the store. Resolves to `undefined` if entry couldn't be found.
+* `async setHead(id)`: stores the current head (string).
+* `async getHead()`: retrieves the current head.
+
+### Network
+
+A network constructor should return a network instance and have the following signature:
+
+```js
+function createNetwork(id, log, onRemoteHead) {
+  return new SomeKindOfNetwork()
+}
+```
+
+`onRemoteHead` is a function that should be called once a remote head is detected. It should be called with one argument: the remote head id.
+
+A network instance should expose the following interface:
+
+* `async start()`: starts the network
+* `async stop()`: stops the network
+* `async get(id)`: tries retrieveing a specific entry from the network
+* `setHead(headId)`: sets the current log head
 
 
 # License

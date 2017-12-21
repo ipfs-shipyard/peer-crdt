@@ -21,7 +21,7 @@ describe('networking', () => {
   before(() => {
     myCRDT = CRDT.defaults({
       store: (id) => new Store(id),
-      network: (id, log) => new Network(id, log, 100),
+      network: (id, log, onRemoteHead) => new Network(id, log, onRemoteHead, 100),
       authenticate: (entry, parents) => 'authentication for ' + entry
     })
   })
