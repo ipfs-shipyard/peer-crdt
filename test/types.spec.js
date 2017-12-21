@@ -181,6 +181,55 @@ describe('types', () => {
       }, 2000)
     })
   })
+
+  describe('lww-set', () => {
+    let instances
+
+    before(() => {
+      instances = [
+        myCRDT.create('lww-set', 'lww-set-test', {
+          authenticate: (entry, parents) => 'authentication for 0 ' + JSON.stringify([entry, parents])
+        }),
+        myCRDT.create('lww-set', 'lww-set-test', {
+          authenticate: (entry, parents) => 'authentication for 1 ' + JSON.stringify([entry, parents])
+        })
+      ]
+    })
+
+    before(() => {
+      return Promise.all(instances.map((i) => i.network.start()))
+    })
+
+    after(() => {
+      return Promise.all(instances.map((i) => i.network.stop()))
+    })
+
+    it('converges', function (done) {
+      this.timeout(3000)
+      instances[0].add('a')
+      instances[0].add('b')
+      instances[0].add('c')
+      instances[1].remove('d')
+
+      setTimeout(() => {
+        instances.forEach((i) => {
+          expect(i.value().sort()).to.deep.equal(['a', 'b', 'c'])
+        })
+
+        instances[1].add('d')
+        instances[1].remove('a')
+        instances[1].remove('b')
+        instances[1].remove('g')
+
+        setTimeout(() => {
+          instances.forEach((i) => {
+            expect(i.value().sort()).to.deep.equal(['c', 'd'])
+          })
+          done()
+        }, 1000)
+      }, 1000)
+    })
+  })
 })
 
 process.on('unhandledRejection', (rej) => {
