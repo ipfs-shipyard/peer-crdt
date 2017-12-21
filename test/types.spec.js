@@ -99,6 +99,47 @@ describe('types', () => {
       }, 2000)
     })
   })
+
+  describe('g-set', () => {
+    let instances
+
+    before(() => {
+      instances = [
+        myCRDT.create('g-set', 'g-set-test', {
+          authenticate: (entry, parents) => 'authentication for 0 ' + JSON.stringify([entry, parents])
+        }),
+        myCRDT.create('g-set', 'g-set-test', {
+          authenticate: (entry, parents) => 'authentication for 1 ' + JSON.stringify([entry, parents])
+        })
+      ]
+    })
+
+    before(() => {
+      return Promise.all(instances.map((i) => i.network.start()))
+    })
+
+    after(() => {
+      return Promise.all(instances.map((i) => i.network.stop()))
+    })
+
+    it('converges', function (done) {
+      this.timeout(3000)
+      instances[0].add('a')
+      instances[0].add('b')
+      instances[1].add('c')
+      instances[0].add('d')
+      instances[1].add('e')
+      instances[1].add('f')
+      instances[1].add('g')
+
+      setTimeout(() => {
+        instances.forEach((i) => {
+          expect(i.value().sort()).to.deep.equal(['a', 'b', 'c', 'd', 'e', 'f', 'g'])
+        })
+        done()
+      }, 2000)
+    })
+  })
 })
 
 process.on('unhandledRejection', (rej) => {

@@ -2,5 +2,6 @@
 
 module.exports = [
   { name: 'g-counter', def: require('./g-counter') },
-  { name: 'pn-counter', def: require('./pn-counter') }
+  { name: 'pn-counter', def: require('./pn-counter') },
+  { name: 'g-set', def: require('./g-set') }
 ]
