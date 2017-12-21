@@ -102,16 +102,35 @@ Here are the options for the `CRDT.create` and composed CRDT constructor are:
 
 A store instance should expose the following methods:
 
+* `async empty ()`: resovles to a boolean indicating if this store has no entries
 * `async put (entry)`: puts an arbitrary JS object and resolves to a unique identifier for that object. The same object should generate the exact same id.
-* `async get (id)`: gets an object from the store.
+* `async get (id)`: gets an object from the store. Resolves to `undefined` if entry couldn't be found.
 * `async setHead(id)`: stores the current head (string).
 * `async getHead()`: retrieves the current head.
 
 ### Network
 
-PENDING: DEFINE NETWORK INTERFACE
+A network constructor should return a network instance and have the following signature:
 
-# Extending
+```js
+function createNetwork(id, log) {
+  return new SomeKindOfNetwork()
+}
+```
+
+A network instance should expose the following interface:
+
+* `async start()`: starts the network
+* `async stop()`: stops the network
+
+# Built-in types
+
+The following types are built-in:
+
+* `g-counter`
+* `pn-counter`
+
+# Extending types
 
 Allows you to define new CRDT types.
 

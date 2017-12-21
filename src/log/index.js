@@ -8,9 +8,14 @@ const pushable = require('pull-pushable')
 const through = require('pull-through')
 const once = require('once')
 
+let ref = 0
+
 class Log extends EventEmitter {
   constructor (id, store, authenticateFn) {
     super()
+    this.setMaxListeners(Infinity)
+
+    this._ref = ++ref
     this._id = id
     this._store = store
     this._authenticateFn = authenticateFn
@@ -36,18 +41,35 @@ class Log extends EventEmitter {
     parents = parents.filter(Boolean)
 
     const entry = [value, auth, parents]
-    const id = await this._store.put(entry)
+    let id = await this._store.put(entry)
 
-    const diverges = parents.length > 0 && parents.indexOf(head) === -1
-    if (diverges) {
-      return this._merge(id, head)
+    const diverges = head && (id !== head) && parents.indexOf(head) === -1
+    if (!diverges) {
+      await this._store.setHead(id)
+      this.emit('new head', id)
     }
-    this.emit('new head', id)
     return id
   }
 
+  merge (otherHead) {
+    return this._limit(() => this._merge(otherHead))
+  }
+
+  async _merge (otherHead) {
+    const head = await this._store.getHead()
+    if (otherHead === head) {
+      return
+    }
+    const isDescendant = await this._isChildOf(head, otherHead)
+    const isParent = await this._isChildOf(otherHead, head)
+    const isConflict = !isDescendant && !isParent
+    if (isConflict) {
+      await this._append(null, null, [otherHead, head].sort())
+    }
+  }
+
   async has (id) {
-    const head = await this._getHead()
+    const head = await this.getHead()
     if (head === id) {
       return true
     }
@@ -112,7 +134,7 @@ class Log extends EventEmitter {
 
     const d = defer()
 
-    this._getHead()
+    this.getHead()
       .then((head) => {
         setImmediate(() => {
           if (!head) {
@@ -239,12 +261,8 @@ class Log extends EventEmitter {
       parents.map((parentId) => this._isChildOf(parentId, entryId)))).find(Boolean)
   }
 
-  _getHead () {
+  getHead () {
     return this._limit(() => this._store.getHead())
-  }
-
-  _merge (a, b) {
-    return this._append(null, null, [a, b].sort())
   }
 }
 

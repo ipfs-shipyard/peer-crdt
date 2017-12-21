@@ -226,54 +226,55 @@ describe('log', () => {
     })
 
     describe('merge', () => {
-      it('merges', (done) => {
-        log.once('new head', (id) => {
-          pull(
-            log.all(),
-            pull.collect((err, entries) => {
-              expect(err).to.not.exist()
-              expect(entries).to.deep.equal([
-                { id: '0414bc2923fac741e4ccc8b71ffe3ea8106fffd15f0adcfd70aa3083b0e2c972',
-                  value: 1,
-                  auth: 'auth for 1',
-                  parents: [] },
-                { id: 'b553fc82acf93a408b2272c728a943ed8641f1bcad88e61e26b775e0431c67be',
-                  value: 2,
-                  auth: 'auth for 2',
-                  parents:
-                   [ '0414bc2923fac741e4ccc8b71ffe3ea8106fffd15f0adcfd70aa3083b0e2c972' ] },
-                { id: 'e3247eb823be0be2325f1a25251310179795387e41f3e0c0075061adbb2ba7c9',
-                  value: 3,
-                  auth: 'auth for 3',
-                  parents:
-                   [ 'b553fc82acf93a408b2272c728a943ed8641f1bcad88e61e26b775e0431c67be' ] },
-                { id: '0c392a1b92842de5c06cdae0b70159dcb0e6b1ae3f776e4af2d75d94b8830482',
-                  value: 4,
-                  auth: 'auth for 4',
-                  parents:
-                   [ 'e3247eb823be0be2325f1a25251310179795387e41f3e0c0075061adbb2ba7c9' ] },
-                { id: '5ce9bba9ec28ce1974073f5fced8bc8b4b527fb596c2faaebd74f38d49dae173',
-                  value: 5,
-                  auth: 'auth for 5',
-                  parents:
-                   [ '0c392a1b92842de5c06cdae0b70159dcb0e6b1ae3f776e4af2d75d94b8830482' ] },
-                { id: '8a27a984f4c4f3e5c08069f29da53230441f140f3a8986ec595f96d7f702b9d3',
-                  value: '2.1',
-                  auth: 'auth for 2.1',
-                  parents:
-                   [ 'b553fc82acf93a408b2272c728a943ed8641f1bcad88e61e26b775e0431c67be' ] },
-                { id: '0830347da83984090a971e8c378184c96631a859705ee8809829ce18f1f893ba',
-                  value: null,
-                  auth: null,
-                  parents:
-                  [ '5ce9bba9ec28ce1974073f5fced8bc8b4b527fb596c2faaebd74f38d49dae173',
-                    '8a27a984f4c4f3e5c08069f29da53230441f140f3a8986ec595f96d7f702b9d3' ] } ])
-              done()
-            })
-          )
-        })
+      it('appends and merges', async () => {
+        const concurrentHead = await log.append('2.1', 'auth for 2.1', entryId)
+        return log.merge(concurrentHead)
+      })
 
-        log.append('2.1', 'auth for 2.1', entryId)
+      it('merged', (done) => {
+        pull(
+          log.all(),
+          pull.collect((err, entries) => {
+            expect(err).to.not.exist()
+            expect(entries).to.deep.equal([
+              { id: '0414bc2923fac741e4ccc8b71ffe3ea8106fffd15f0adcfd70aa3083b0e2c972',
+                value: 1,
+                auth: 'auth for 1',
+                parents: [] },
+              { id: 'b553fc82acf93a408b2272c728a943ed8641f1bcad88e61e26b775e0431c67be',
+                value: 2,
+                auth: 'auth for 2',
+                parents:
+                 [ '0414bc2923fac741e4ccc8b71ffe3ea8106fffd15f0adcfd70aa3083b0e2c972' ] },
+              { id: 'e3247eb823be0be2325f1a25251310179795387e41f3e0c0075061adbb2ba7c9',
+                value: 3,
+                auth: 'auth for 3',
+                parents:
+                 [ 'b553fc82acf93a408b2272c728a943ed8641f1bcad88e61e26b775e0431c67be' ] },
+              { id: '0c392a1b92842de5c06cdae0b70159dcb0e6b1ae3f776e4af2d75d94b8830482',
+                value: 4,
+                auth: 'auth for 4',
+                parents:
+                 [ 'e3247eb823be0be2325f1a25251310179795387e41f3e0c0075061adbb2ba7c9' ] },
+              { id: '5ce9bba9ec28ce1974073f5fced8bc8b4b527fb596c2faaebd74f38d49dae173',
+                value: 5,
+                auth: 'auth for 5',
+                parents:
+                 [ '0c392a1b92842de5c06cdae0b70159dcb0e6b1ae3f776e4af2d75d94b8830482' ] },
+              { id: '8a27a984f4c4f3e5c08069f29da53230441f140f3a8986ec595f96d7f702b9d3',
+                value: '2.1',
+                auth: 'auth for 2.1',
+                parents:
+                 [ 'b553fc82acf93a408b2272c728a943ed8641f1bcad88e61e26b775e0431c67be' ] },
+              { id: '0830347da83984090a971e8c378184c96631a859705ee8809829ce18f1f893ba',
+                value: null,
+                auth: null,
+                parents:
+                [ '5ce9bba9ec28ce1974073f5fced8bc8b4b527fb596c2faaebd74f38d49dae173',
+                  '8a27a984f4c4f3e5c08069f29da53230441f140f3a8986ec595f96d7f702b9d3' ] } ])
+            done()
+          })
+        )
       })
 
       it('since the merge', (done) => {

@@ -11,7 +11,6 @@ class MemoryStore {
     const serialized = JSON.stringify(entry)
     return hashFor(serialized).then((id) => {
       this._entries[id] = serialized
-      this._head = id
       return id
     })
   }

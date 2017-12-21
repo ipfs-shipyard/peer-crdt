@@ -30,19 +30,28 @@ module.exports = (type, log, network) => {
     _isPeerCRDT: true,
     network: network,
     value () {
-      return value
+      return type.valueOf(value)
     }
   })
 
+  self.setMaxListeners(Infinity)
+
+  let lastEmitted
+
   pull(
     log.follow(),
+    pull.filter((entry) => entry.value !== undefined && entry.value !== null),
     pull.map((entry) => {
-      if (entry.hasOwnProperty('value')) {
-        const newValue = type.reduce(entry.value, value)
-        if (!deepEqual(newValue, value)) {
-          value = newValue
-          self.emit('change')
-        }
+      if (lastEmitted === entry.id) {
+        return
+      }
+
+      lastEmitted = entry.id
+
+      const newValue = type.reduce(entry.value, value)
+      if (!deepEqual(newValue, value)) {
+        value = newValue
+        self.emit('change', entry.id)
       }
     }),
     pull.onEnd((err) => {

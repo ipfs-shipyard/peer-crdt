@@ -16,7 +16,7 @@ describe('CRDT', () => {
   let crdt
 
   it('can define a CRDT type', () => {
-    CRDT.define('g-counter', gCounter)
+    CRDT.define('g-counter-crdt-test', gCounter)
   })
 
   it('can create a constructor with default options', () => {
@@ -32,11 +32,11 @@ describe('CRDT', () => {
   })
 
   it('need id', () => {
-    expect(() => myCRDT.create('g-counter')).to.throw('need id')
+    expect(() => myCRDT.create('g-counter-crdt-test')).to.throw('need id')
   })
 
   it('can create crdt', () => {
-    crdt = myCRDT.create('g-counter', 'test')
+    crdt = myCRDT.create('g-counter-crdt-test', 'test')
   })
 
   it('value starts at 0', () => {

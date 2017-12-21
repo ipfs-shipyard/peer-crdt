@@ -2,7 +2,8 @@
 
 const EventEmitter = require('events')
 
-const DELAY = 100
+const DELAY = 50
+const REPEAT_WANT_INTERVAL = 100
 const network = new EventEmitter()
 network.setMaxListeners(Infinity)
 
@@ -12,10 +13,17 @@ network.broadcast = (topic, message) => {
 
 network.get = (id) => {
   return new Promise((resolve, reject) => {
-    network.emit('want', JSON.stringify(id))
+    const message = JSON.stringify(id)
+
+    const interval = setInterval(() => {
+      network.emit('want', message)
+    }, REPEAT_WANT_INTERVAL)
+
     network.once(id, (message) => {
+      clearInterval(interval)
       resolve(JSON.parse(message))
     })
+    network.emit('want', message)
   })
 }
 
