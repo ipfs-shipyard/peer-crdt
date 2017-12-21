@@ -51,5 +51,3 @@ describe('CRDT', () => {
     crdt.increment()
   })
 })
-
-process.on('unhandledRejection', (rej) => console.log(rej))

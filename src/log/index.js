@@ -22,7 +22,7 @@ class Log extends EventEmitter {
   }
 
   async _append (value, auth, parents) {
-    if (!auth) {
+    if (!auth && value !== null) {
       auth = await this._authenticateFn(value, parents)
     }
 
@@ -122,7 +122,9 @@ class Log extends EventEmitter {
           }
         })
       })
-      .catch((err) => d.abort(err))
+      .catch((err) => {
+        d.abort(err)
+      })
 
     return d
   }
@@ -144,30 +146,33 @@ class Log extends EventEmitter {
     this.on('new head', onNewHead)
 
     const pullSince = (since) => {
+      const self = this
       pull(
         this.since(since),
         through(
           (entry) => {
             p.push(entry)
           },
-          (end) => {
+          function (end) {
             if (hasMore) {
               hasMore = false
               pullSince(last)
             } else {
               if (!stopped) {
-                this.once('new head', () => {
+                self.once('new head', () => {
                   if (!stopped) {
                     pullSince(last)
                   }
                 })
               }
-              this.push(end)
+              this.queue(null)
             }
           }
         ),
         pull.onEnd((err) => {
-          p.end(err)
+          if (err) {
+            p.end(err)
+          }
         })
       )
     }
@@ -193,12 +198,12 @@ class Log extends EventEmitter {
       const callback = once(_callback)
       this._store.get(entryId)
         .then((entry) => {
-          callback(null, {
+          setImmediate(() => callback(null, {
             id: entryId,
             value: entry && entry[0],
             auth: entry && entry[1],
             parents: (entry && entry[2]) || []
-          })
+          }))
         })
         .catch(callback)
     })

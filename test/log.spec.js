@@ -227,7 +227,7 @@ describe('log', () => {
 
     describe('merge', () => {
       it('merges', (done) => {
-        log.on('new head', (id) => {
+        log.once('new head', (id) => {
           pull(
             log.all(),
             pull.collect((err, entries) => {
@@ -262,9 +262,9 @@ describe('log', () => {
                   auth: 'auth for 2.1',
                   parents:
                    [ 'b553fc82acf93a408b2272c728a943ed8641f1bcad88e61e26b775e0431c67be' ] },
-                { id: '3610b6f930f9bea60374669b32d9ac3563423c81a089de2cfb3033996fb1362e',
+                { id: '0830347da83984090a971e8c378184c96631a859705ee8809829ce18f1f893ba',
                   value: null,
-                  auth: 'auth for null',
+                  auth: null,
                   parents:
                   [ '5ce9bba9ec28ce1974073f5fced8bc8b4b527fb596c2faaebd74f38d49dae173',
                     '8a27a984f4c4f3e5c08069f29da53230441f140f3a8986ec595f96d7f702b9d3' ] } ])
@@ -274,6 +274,25 @@ describe('log', () => {
         })
 
         log.append('2.1', 'auth for 2.1', entryId)
+      })
+
+      it('since the merge', (done) => {
+        log.append(6).then(() => {
+          pull(
+            log.since('0830347da83984090a971e8c378184c96631a859705ee8809829ce18f1f893ba'),
+            pull.collect((err, entries) => {
+              expect(err).to.not.exist()
+              expect(entries).to.deep.equal([
+                { id: '767076c7635a9061d74fc5d1df9ad07722decf7103ab67ff81c6e54e457a8ec3',
+                  value: 6,
+                  auth: 'auth for 6',
+                  parents:
+                   [ '0830347da83984090a971e8c378184c96631a859705ee8809829ce18f1f893ba' ] }
+              ])
+              done()
+            })
+          )
+        })
       })
     })
 
@@ -287,7 +306,7 @@ describe('log', () => {
           pull.map((entry) => {
             if (!more) {
               more = true
-              log.append(8, 'auth for 8')
+              log.append(9, 'auth for 8')
             }
             if (entry.value === 8) {
               f.end()
@@ -326,33 +345,33 @@ describe('log', () => {
                 auth: 'auth for 2.1',
                 parents:
                  [ 'b553fc82acf93a408b2272c728a943ed8641f1bcad88e61e26b775e0431c67be' ] },
-              { id: '3610b6f930f9bea60374669b32d9ac3563423c81a089de2cfb3033996fb1362e',
+              { id: '0830347da83984090a971e8c378184c96631a859705ee8809829ce18f1f893ba',
                 value: null,
-                auth: 'auth for null',
+                auth: null,
                 parents:
                 [ '5ce9bba9ec28ce1974073f5fced8bc8b4b527fb596c2faaebd74f38d49dae173',
                   '8a27a984f4c4f3e5c08069f29da53230441f140f3a8986ec595f96d7f702b9d3' ] },
-              { id: '2a14e7c39e5efc2beb583f3cce2b6094dc22181dc5b2580272329ff489258f8d',
+              { id: '767076c7635a9061d74fc5d1df9ad07722decf7103ab67ff81c6e54e457a8ec3',
                 value: 6,
                 auth: 'auth for 6',
                 parents:
-                 [ '3610b6f930f9bea60374669b32d9ac3563423c81a089de2cfb3033996fb1362e' ] },
-              { id: '688d0d2652028affd48523562f2d73a5b391877a00264774c6c7b409eb97bab6',
+                 [ '0830347da83984090a971e8c378184c96631a859705ee8809829ce18f1f893ba' ] },
+              { id: '01c9190af68e97db614f44883d789eb90823d8b8f79b2bca5c959f9be1caecf1',
                 value: 7,
                 auth: 'auth for 7',
                 parents:
-                 [ '2a14e7c39e5efc2beb583f3cce2b6094dc22181dc5b2580272329ff489258f8d' ] },
-              { id: '9b4a78dcfd4a548fdaf530eee9ca22f8c2ffe2ca04a8777c40a4bf69bd1054c6',
+                 [ '767076c7635a9061d74fc5d1df9ad07722decf7103ab67ff81c6e54e457a8ec3' ] },
+              { id: 'cb5492e843f572e2b8ce4715063b6a534a345e4114b7a14a4ab1d328d920804d',
                 value: 8,
                 auth: 'auth for 8',
                 parents:
-                 [ '688d0d2652028affd48523562f2d73a5b391877a00264774c6c7b409eb97bab6' ] } ])
+                 [ '01c9190af68e97db614f44883d789eb90823d8b8f79b2bca5c959f9be1caecf1' ] } ])
             done()
           })
         )
 
-        log.append(6, 'auth for 6')
-        log.append(7, 'auth for 7')
+        log.append(7)
+        log.append(8)
       })
     })
   })
