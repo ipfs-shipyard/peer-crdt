@@ -1,5 +1,3 @@
-'use strict'
-
 /* eslint-env mocha */
 'use strict'
 
@@ -46,6 +44,10 @@ describe('types', () => {
 
     it('converges', function (done) {
       this.timeout(3000)
+
+      const changes = [0, 0]
+      instances.forEach((instance, i) => instance.on('change', () => { changes[i]++ }))
+
       instances[0].increment()
       instances[0].increment()
       instances[1].increment()
@@ -56,6 +58,7 @@ describe('types', () => {
 
       setTimeout(() => {
         expect(instances.map((i) => i.value())).to.deep.equal([7, 7])
+        expect(changes).to.deep.equal([7, 7])
         done()
       }, 2000)
     })
@@ -85,6 +88,10 @@ describe('types', () => {
 
     it('converges', function (done) {
       this.timeout(3000)
+
+      const changes = [0, 0]
+      instances.forEach((instance, i) => instance.on('change', () => { changes[i]++ }))
+
       instances[0].increment()
       instances[0].increment()
       instances[1].increment()
@@ -95,6 +102,7 @@ describe('types', () => {
 
       setTimeout(() => {
         expect(instances.map((i) => i.value())).to.deep.equal([3, 3])
+        expect(changes).to.deep.equal([7, 7])
         done()
       }, 2000)
     })
@@ -124,6 +132,10 @@ describe('types', () => {
 
     it('converges', function (done) {
       this.timeout(3000)
+
+      const changes = [0, 0]
+      instances.forEach((instance, i) => instance.on('change', () => { changes[i]++ }))
+
       instances[0].add('a')
       instances[0].add('b')
       instances[1].add('c')
@@ -136,6 +148,7 @@ describe('types', () => {
         instances.forEach((i) => {
           expect(i.value().sort()).to.deep.equal(['a', 'b', 'c', 'd', 'e', 'f', 'g'])
         })
+        expect(changes).to.deep.equal([7, 7])
         done()
       }, 2000)
     })
@@ -165,6 +178,10 @@ describe('types', () => {
 
     it('converges', function (done) {
       this.timeout(3000)
+
+      const changes = [0, 0]
+      instances.forEach((instance, i) => instance.on('change', () => { changes[i]++ }))
+
       instances[0].add('a')
       instances[0].add('b')
       instances[1].remove('a')
@@ -177,6 +194,7 @@ describe('types', () => {
         instances.forEach((i) => {
           expect(i.value().sort()).to.deep.equal(['c', 'd'])
         })
+        expect(changes).to.deep.equal([7, 7])
         done()
       }, 2000)
     })
@@ -206,6 +224,10 @@ describe('types', () => {
 
     it('converges', function (done) {
       this.timeout(3000)
+
+      const changes = [0, 0]
+      instances.forEach((instance, i) => instance.on('change', () => { changes[i]++ }))
+
       instances[0].add('a')
       instances[0].add('b')
       instances[0].add('c')
@@ -226,6 +248,7 @@ describe('types', () => {
           instances.forEach((i) => {
             expect(i.value().sort()).to.deep.equal(['a', 'c', 'd'])
           })
+          expect(changes).to.deep.equal([9, 9])
           done()
         }, 1000)
       }, 1000)
@@ -256,6 +279,10 @@ describe('types', () => {
 
     it('converges', function (done) {
       this.timeout(3000)
+
+      const changes = [0, 0]
+      instances.forEach((instance, i) => instance.on('change', () => { changes[i]++ }))
+
       instances[0].add('a')
       instances[0].add('b')
       instances[0].add('c')
@@ -276,6 +303,7 @@ describe('types', () => {
           instances.forEach((i) => {
             expect(i.value().sort()).to.deep.equal(['a', 'c', 'd'])
           })
+          expect(changes).to.deep.equal([6, 6])
           done()
         }, 1000)
       }, 1000)

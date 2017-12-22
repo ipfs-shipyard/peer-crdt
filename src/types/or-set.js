@@ -5,17 +5,18 @@ const cuid = require('cuid')
 module.exports = {
   first: () => [new Map(), new Set()],
   reduce: (message, previous) => {
+    const ret = [new Map([...previous[0]]), new Set([...previous[1]])]
     const add = message[0]
     if (add) {
       const tag = add[0]
       const value = add[1]
-      previous[0].set(value, tag)
+      ret[0].set(value, tag)
     }
     const remove = message[1]
     if (remove) {
-      previous[1].add(remove)
+      ret[1].add(remove)
     }
-    return previous
+    return ret
   },
 
   valueOf: (state) => {

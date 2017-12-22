@@ -2,7 +2,6 @@
 
 const pull = require('pull-stream')
 const EventEmitter = require('events')
-const deepEqual = require('deep-equal')
 
 module.exports = (type, log, network) => {
   if (typeof type.first !== 'function') {
@@ -38,23 +37,19 @@ module.exports = (type, log, network) => {
 
   self.setMaxListeners(Infinity)
 
-  let lastEmitted
+  let lastEmitted = new Set()
 
   pull(
     log.follow(),
     pull.filter((entry) => entry.value !== undefined && entry.value !== null),
     pull.map((entry) => {
-      if (lastEmitted === entry.id) {
+      if (lastEmitted.has(entry.id)) {
         return
       }
 
-      lastEmitted = entry.id
-
-      const newValue = type.reduce(entry.value, value)
-      if (!deepEqual(newValue, value)) {
-        value = newValue
-        self.emit('change', entry.id)
-      }
+      lastEmitted.add(entry.id)
+      value = type.reduce(entry.value, value)
+      self.emit('change', entry.id)
     }),
     pull.onEnd((err) => {
       throw err || new Error('follow stream should not have ended')
