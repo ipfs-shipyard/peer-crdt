@@ -309,8 +309,6 @@ describe('types', () => {
       }, 1000)
     })
   })
-
-  describe.skip('mv-register')
 })
 
 process.on('unhandledRejection', (rej) => {
