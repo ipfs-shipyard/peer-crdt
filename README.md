@@ -98,7 +98,7 @@ Here are the options for the `CRDT.create` and composed CRDT constructor are:
 
 # Built-in types
 
-All the types in this package are value-based CRDTs.
+All the types in this package are operation-based CRDTs.
 
 The following types are built-in:
 
