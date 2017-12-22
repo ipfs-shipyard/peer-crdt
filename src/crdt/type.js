@@ -13,25 +13,27 @@ module.exports = (type, log, network) => {
     throw new Error('type should have a .reduce function')
   }
 
+  let value = type.first()
+
   const mutators = type.mutators || {}
   const methods = {}
   Object.keys(mutators).forEach((mutatorName) => {
     // generate a mutator function to wrap the CRDT message generator
     const mutator = mutators[mutatorName]
     methods[mutatorName] = function () {
-      const message = mutator.apply(null, arguments)
-      log.append(message)
+      const args = Array.prototype.slice.call(arguments)
+      args.push(value)
+      const message = mutator.apply(null, args)
+      if (message !== undefined) {
+        log.append(message)
+      }
     }
   })
-
-  let value = type.first()
 
   const self = Object.assign(new EventEmitter(), methods, {
     _isPeerCRDT: true,
     network: network,
-    value () {
-      return type.valueOf(value)
-    }
+    value: () => type.valueOf(value)
   })
 
   self.setMaxListeners(Infinity)
