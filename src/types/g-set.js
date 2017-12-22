@@ -3,7 +3,7 @@
 module.exports = {
   first: () => new Set(),
   reduce: (message, previous) => new Set([...previous, message]),
-  valueOf: (state) => Array.from(state.values()),
+  valueOf: (state) => new Set([...state]),
   mutators: {
     add: (elem) => elem
   }

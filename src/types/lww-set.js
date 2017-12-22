@@ -13,13 +13,13 @@ module.exports = {
   valueOf: (state) => {
     const adds = Array.from(state[0].entries())
     const removes = state[1]
-    return adds
+    return new Set(adds
       .filter((add) => {
         const key = add[0]
         const addTs = add[1]
         return !removes.has(key) || removes.get(key) < addTs
       })
-      .map((add) => add[0])
+      .map((add) => add[0]))
   },
 
   mutators: {

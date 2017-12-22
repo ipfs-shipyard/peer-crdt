@@ -98,14 +98,33 @@ Here are the options for the `CRDT.create` and composed CRDT constructor are:
 
 # Built-in types
 
+All the types in this package are value-based CRDTs.
+
 The following types are built-in:
 
-* `g-counter`
-* `pn-counter`
+* `g-counter` (int)
+  * `.increment()`
+* `pn-counter` (int)
+  * `.increment()`
+  * `.decrement()`
+* `g-set` (Set)
+  * `.add(element)`
+* `2p-set` (Set)
+  * `.add(element)`
+  * `.remove(element)`
+* `lww-set` (Set)
+  * `.add(element)`
+  * `.remove(element)`
+* `or-set` (Set)
+  * `.add(element)`
+  * `.remove(element)`
+
+(For a detailed explanation of these types, you can check out [this document](http://hal.upmc.fr/inria-00555588/document).)
+
 
 # Extending types
 
-Allows you to define new CRDT types.
+This package allows you to define new CRDT types.
 
 ## `CRDT.define(name, definition)`
 
@@ -129,7 +148,7 @@ Example of a G-Counter:
 }
 ```
 
-## Types
+## Interfaces
 
 ### Store
 
@@ -160,6 +179,10 @@ A network instance should expose the following interface:
 * `async get(id)`: tries retrieveing a specific entry from the network
 * `setHead(headId)`: sets the current log head
 
+
+# Internals
+
+[docs/INTERNAL.md](docs/INTERNAL.md)
 
 # License
 

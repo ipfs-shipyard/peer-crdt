@@ -146,7 +146,7 @@ describe('types', () => {
 
       setTimeout(() => {
         instances.forEach((i) => {
-          expect(i.value().sort()).to.deep.equal(['a', 'b', 'c', 'd', 'e', 'f', 'g'])
+          expect(Array.from(i.value()).sort()).to.deep.equal(['a', 'b', 'c', 'd', 'e', 'f', 'g'])
         })
         expect(changes).to.deep.equal([7, 7])
         done()
@@ -192,7 +192,7 @@ describe('types', () => {
 
       setTimeout(() => {
         instances.forEach((i) => {
-          expect(i.value().sort()).to.deep.equal(['c', 'd'])
+          expect(Array.from(i.value()).sort()).to.deep.equal(['c', 'd'])
         })
         expect(changes).to.deep.equal([7, 7])
         done()
@@ -236,7 +236,7 @@ describe('types', () => {
 
       setTimeout(() => {
         instances.forEach((i) => {
-          expect(i.value().sort()).to.deep.equal(['b', 'c'])
+          expect(Array.from(i.value()).sort()).to.deep.equal(['b', 'c'])
         })
 
         instances[1].add('d')
@@ -246,7 +246,7 @@ describe('types', () => {
 
         setTimeout(() => {
           instances.forEach((i) => {
-            expect(i.value().sort()).to.deep.equal(['a', 'c', 'd'])
+            expect(Array.from(i.value()).sort()).to.deep.equal(['a', 'c', 'd'])
           })
           expect(changes).to.deep.equal([9, 9])
           done()

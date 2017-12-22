@@ -10,7 +10,7 @@ module.exports = {
   ],
   valueOf: (state) => {
     const tombstones = state[1]
-    return Array.from(state[0]).filter((entry) => !tombstones.has(entry))
+    return new Set(Array.from(state[0]).filter((entry) => !tombstones.has(entry)))
   },
   mutators: {
     add: (elem) => [GSet.mutators.add(elem), null],
