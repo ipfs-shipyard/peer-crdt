@@ -48,8 +48,8 @@ const myCrdtInstance = MyCRDT(id)
 
 ```js
 const schema = {
-  a: 'G-Set',
-  b: 'LWW-Set'
+  a: 'g-set',
+  b: 'lww-set'
 }
 ```
 
@@ -60,8 +60,8 @@ Instead of a key-value map, you can create a schema based on an array. The keys 
 
 ```js
 const schema = [
-  'G-Set',
-  'LWW-Set'
+  'g-set',
+  'lww-set'
 ]
 ```
 
@@ -77,8 +77,8 @@ Full example:
 
 ```js
 const schema = {
-  a: 'G-Set',
-  b: 'LWW-Set'
+  a: 'g-set',
+  b: 'lww-set'
 }
 const MyCRDT = CRDT.compose(schema)
 const myCrdtInstance = MyCRDT(id)
