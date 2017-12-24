@@ -6,5 +6,6 @@ module.exports = [
   { name: 'g-set', def: require('./g-set') },
   { name: '2p-set', def: require('./2p-set') },
   { name: 'lww-set', def: require('./lww-set') },
-  { name: 'or-set', def: require('./or-set') }
+  { name: 'or-set', def: require('./or-set') },
+  { name: 'rga', def: require('./rga') }
 ]

@@ -6,6 +6,8 @@ const dirtyChai = require('dirty-chai')
 const expect = chai.expect
 chai.use(dirtyChai)
 
+const series = require('async/series')
+
 const Store = require('./helpers/store')
 const Network = require('./helpers/network')
 const CRDT = require('../')
@@ -307,6 +309,98 @@ describe('types', () => {
           done()
         }, 1000)
       }, 1000)
+    })
+  })
+
+  describe('rga', () => {
+    let instances
+
+    before(() => {
+      instances = [
+        myCRDT.create('rga', 'rga-test', {
+          authenticate: (entry, parents) => 'authentication for 0 ' + JSON.stringify([entry, parents])
+        }),
+        myCRDT.create('rga', 'rga-test', {
+          authenticate: (entry, parents) => 'authentication for 1 ' + JSON.stringify([entry, parents])
+        })
+      ]
+    })
+
+    before(() => {
+      return Promise.all(instances.map((i) => i.network.start()))
+    })
+
+    after(() => {
+      return Promise.all(instances.map((i) => i.network.stop()))
+    })
+
+    it('converges', function (done) {
+      this.timeout(5000)
+
+      const changes = [0, 0]
+      instances.forEach((instance, i) => instance.on('change', () => { changes[i]++ }))
+
+      instances[0].push('a')
+      instances[1].push('b')
+
+      series([
+        (cb) => setTimeout(cb, 1000),
+        (cb) => {
+          const result = instances[0].value()
+          expect(result.sort()).to.deep.equal(['a', 'b'])
+          expect(instances[1].value()).to.deep.equal(result)
+          cb()
+        },
+        (cb) => {
+          instances[0].push('c')
+          instances[1].push('d')
+          cb()
+        },
+        (cb) => setTimeout(cb, 1000),
+        (cb) => {
+          let result
+          instances.forEach((i) => {
+            if (result) {
+              expect(i.value()).to.deep.equal(result)
+            } else {
+              result = i.value()
+            }
+          })
+          expect(result.slice(2).sort()).to.deep.equal(['c', 'd'])
+          expect(result.sort()).to.deep.equal(['a', 'b', 'c', 'd'])
+          expect(instances[1].value()).to.deep.equal(result)
+          cb()
+        },
+        (cb) => {
+          instances[0].removeAt(3)
+          instances[0].removeAt(3)
+          cb()
+        },
+        (cb) => setTimeout(cb, 1000),
+        (cb) => {
+          instances.forEach((i) => {
+            expect(i.value().sort()).to.deep.equal(['a', 'b', 'c'])
+          })
+          cb()
+        },
+        (cb) => {
+          instances[0].set(5, 'e')
+          instances[1].set(5, 'f')
+          cb()
+        },
+        (cb) => setTimeout(cb, 1000),
+        (cb) => {
+          instances.forEach((i) => {
+            const value = i.value()
+            expect(value.slice(3).sort()).to.deep.equal(['e', 'f', null, null])
+          })
+          cb()
+        },
+        (cb) => {
+          expect(changes).to.deep.equal([10, 10])
+          cb()
+        }
+      ], done)
     })
   })
 })

@@ -24,7 +24,16 @@ module.exports = (type, log, network) => {
       args.push(value)
       const message = mutator.apply(null, args)
       if (message !== undefined) {
-        log.append(message)
+        if (typeof message === 'function') {
+          pull(
+            message,
+            pull.collect((err, messages) => {
+              if (err) { throw err }
+              messages.forEach((message) => log.append(message))
+            }))
+        } else {
+          log.append(message)
+        }
       }
     }
   })

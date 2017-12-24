@@ -118,6 +118,10 @@ The following types are built-in:
 * `or-set` (Set)
   * `.add(element)`
   * `.remove(element)`
+* `rga` (Array)
+  * `.push(element)`
+  * `.removeAt(pos)`
+  * `.set(pos, element)`
 
 (For a detailed explanation of these types, you can check out [this document](http://hal.upmc.fr/inria-00555588/document).)
 
