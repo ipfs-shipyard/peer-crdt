@@ -12,17 +12,16 @@ module.exports = (type, log, network) => {
     throw new Error('type should have a .reduce function')
   }
 
-  let value = type.first()
+  let state = type.first()
 
   const mutators = type.mutators || {}
   const methods = {}
   Object.keys(mutators).forEach((mutatorName) => {
     // generate a mutator function to wrap the CRDT message generator
     const mutator = mutators[mutatorName]
-    methods[mutatorName] = function () {
-      const args = Array.prototype.slice.call(arguments)
-      args.push(value)
-      const message = mutator.apply(null, args)
+    ensureMutatorIsFunction(mutator)
+    methods[mutatorName] = (...args) => {
+      const message = mutator.apply(state, args)
       if (message !== undefined) {
         if (typeof message === 'function') {
           pull(
@@ -41,7 +40,7 @@ module.exports = (type, log, network) => {
   const self = Object.assign(new EventEmitter(), methods, {
     _isPeerCRDT: true,
     network: network,
-    value: () => type.valueOf(value)
+    value: () => type.valueOf(state)
   })
 
   self.setMaxListeners(Infinity)
@@ -57,7 +56,7 @@ module.exports = (type, log, network) => {
       }
 
       lastEmitted.add(entry.id)
-      value = type.reduce(entry.value, value)
+      state = type.reduce(entry.value, state)
       self.emit('change', entry.id)
     }),
     pull.onEnd((err) => {
@@ -66,4 +65,10 @@ module.exports = (type, log, network) => {
   )
 
   return self
+}
+
+function ensureMutatorIsFunction (mutator) {
+  if (typeof mutator !== 'function') {
+    throw new Error('mutator should be a function')
+  }
 }

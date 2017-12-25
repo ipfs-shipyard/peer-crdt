@@ -31,15 +31,16 @@ exports = module.exports = {
       if (addedVertices.has(beforeVertex)) {
         const value = add[1]
         const id = add[2]
+        addedVertices.set(id, value)
+
         const edges = state[2]
 
         let l = beforeVertex
         let r = edges.get(beforeVertex)
-        while (r < id) {
+        while (addedVertices.has(r) && r > id) {
           l = r
           r = edges.get(r)
         }
-        addedVertices.set(id, value)
         edges.set(l, id)
         edges.set(id, r)
       }
@@ -69,7 +70,8 @@ exports = module.exports = {
   },
 
   mutators: {
-    addRight: (beforeVertex, value, state) => {
+    addRight (beforeVertex, value) {
+      const state = this
       const added = state[0]
       const removed = state[1]
 
@@ -77,21 +79,32 @@ exports = module.exports = {
         return [[beforeVertex, value, cuid()]]
       }
     },
-    push (value, state) {
+
+    push (value) {
+      const state = this
       const edges = state[2]
       let id = null
-      while (edges.has(id)) {
-        id = edges.get(id)
-      }
-      return exports.mutators.addRight(id || null, value, state)
+      let edge
+      do {
+        edge = edges.get(id)
+        if (edge) {
+          id = edge
+        }
+      } while (edge)
+
+      return [[id || null, value, cuid()]]
     },
-    remove: (vertex, state) => {
+
+    remove (vertex) {
+      const state = this
       const [added, removed] = state
       if (added.has(vertex) && !removed.has(vertex)) {
         return [null, vertex]
       }
     },
-    removeAt: (pos, state) => {
+
+    removeAt (pos) {
+      const state = this
       const edges = state[2]
       let i = -1
       let id = null
@@ -104,24 +117,52 @@ exports = module.exports = {
         i++
       }
 
-      return exports.mutators.remove(id, state)
+      return exports.mutators.remove.call(state, id)
     },
-    set: (pos, value, state) => {
+
+    set (pos, value) {
+      const state = this
       const messages = []
       const edges = state[2]
       let i = -1
       let id = null
       while (i < pos) {
+        let next
+        if (edges.has(id)) {
+          next = edges.get(id)
+        }
+        if (!next) {
+          next = cuid()
+          const message = [[id, null, next]]
+          messages.push(message)
+        }
+        id = next
+        i++
+      }
+      if (edges.has(id)) {
+        messages.push(exports.mutators.remove.call(state, id)) // remove
+      }
+      messages.push([[id, value, cuid()]])
+      return pull.values(messages)
+    },
+
+    insertAt (pos, value) {
+      const state = this
+      const messages = []
+      const edges = state[2]
+      let i = 0
+      let id = null
+      while (i < pos) {
         if (edges.has(id)) {
           id = edges.get(id)
         } else {
-          const message = exports.mutators.push(null, state)
+          const message = exports.mutators.push.call(state, null)
           id = message[2]
           messages.push(message)
         }
         i++
       }
-      messages.push(exports.mutators.push(value, state))
+      messages.push(exports.mutators.addRight.call(state, id, value))
       return pull.values(messages)
     }
   }

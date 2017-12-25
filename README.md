@@ -120,6 +120,7 @@ The following types are built-in:
   * `.remove(element)`
 * `rga` (Array)
   * `.push(element)`
+  * `.insertAt(pos, element)`
   * `.removeAt(pos)`
   * `.set(pos, element)`
 

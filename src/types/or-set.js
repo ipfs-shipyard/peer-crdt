@@ -32,7 +32,8 @@ module.exports = {
 
   mutators: {
     add: (elem) => [[cuid(), elem], null],
-    remove: (elem, state) => {
+    remove (elem) {
+      const state = this
       const adds = state[0]
       const tag = adds.get(elem)
       if (tag) {
