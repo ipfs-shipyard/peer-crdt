@@ -13,6 +13,7 @@ function defaults (defaultOptions) {
   return {
     define: define,
     create: (type, id, options) => create(type, id, Object.assign({}, defaultOptions, options)),
+    embed: (type, options) => embed(type, Object.assign({}, defaultOptions, options)),
     compose: (schema, options) => compose(schema, Object.assign({}, defaultOptions, options)),
     defaults: (moreDefaults) => defaults(Object.assign({}, defaultOptions, moreDefaults))
   }
@@ -43,9 +44,19 @@ function create (typeName, id, options) {
   const log = Log(id, options.store(id), options.authenticate)
   const network = Network(id, log, options.network)
 
-  return Type(type, log, network)
+  const createDelegate = (typeName, id, moreOptions) => create(typeName, id, Object.assign({}, options, moreOptions))
+
+  return Type(typeName, type, id, log, network, createDelegate)
 }
 
 function compose (schema, options) {
   return Compose(create, schema, options)
+}
+
+function embed (typeName, options) {
+  return (id) => ({
+    _isPeerCRDT: true,
+    _peerCRDTId: id,
+    _type: typeName
+  })
 }

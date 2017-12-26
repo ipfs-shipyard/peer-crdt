@@ -1,6 +1,7 @@
 'use strict'
 
 const pLimit = require('p-limit')
+const EventEmitter = require('events')
 
 module.exports = createNetworkWrapper
 
@@ -37,18 +38,21 @@ function createNetworkWrapper (id, log, createNetwork) {
 
   const network = createNetwork(id, log, onRemoteHead)
 
-  return {
+  return Object.assign(new EventEmitter(), {
+    isStarted: false,
     async start () {
       await network.start()
+      this.isStarted = true
       log.on('new head', (head) => network.setHead(head))
       const head = await log.getHead()
       if (head) {
         network.setHead(head)
       }
+      this.emit('started')
     },
 
     stop () {
-      return network.stop()
+      return network.stop().then(() => this.emit('stopped'))
     }
-  }
+  })
 }
