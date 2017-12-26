@@ -133,8 +133,7 @@ exports = module.exports = {
         }
         if (!next) {
           next = cuid()
-          const message = [[id, null, next]]
-          messages.push(message)
+          messages.push([[id, null, next]])
         }
         id = next
         i++
@@ -153,13 +152,15 @@ exports = module.exports = {
       let i = 0
       let id = null
       while (i < pos) {
+        let next
         if (edges.has(id)) {
-          id = edges.get(id)
-        } else {
-          const message = exports.mutators.push.call(state, null)
-          id = message[2]
-          messages.push(message)
+          next = edges.get(id)
         }
+        if (!next) {
+          next = cuid()
+          messages.push([[id, null, next]])
+        }
+        id = next
         i++
       }
       messages.push(exports.mutators.addRight.call(state, id, value))
