@@ -1,6 +1,6 @@
 # peer-crdt
 
-An extensible collection of CRDTs that are meant to work over a p2p network.
+An extensible collection of operation-based CRDTs that are meant to work over a p2p network.
 
 
 ## `CRDT.defaults(options)`
@@ -117,27 +117,16 @@ All the types in this package are operation-based CRDTs.
 
 The following types are built-in:
 
-* `g-counter` (int)
-  * `.increment()`
-* `pn-counter` (int)
-  * `.increment()`
-  * `.decrement()`
-* `g-set` (Set)
-  * `.add(element)`
-* `2p-set` (Set)
-  * `.add(element)`
-  * `.remove(element)`
-* `lww-set` (Set)
-  * `.add(element)`
-  * `.remove(element)`
-* `or-set` (Set)
-  * `.add(element)`
-  * `.remove(element)`
-* `rga` (Array)
-  * `.push(element)`
-  * `.insertAt(pos, element)`
-  * `.removeAt(pos)`
-  * `.set(pos, element)`
+| Name | Identifier | Mutators | Value Type |
+|------|------------|----------|------------|
+| Increment-only Counter | `g-counter` | `.increment()` | int |
+| PN-Counter | `pn-counter` |   `.increment()`,`.decrement()` | int |
+| Grow-Only Set | `g-set` | `.add(element)` | Set |
+| Two-Phase Set | `2p-set` |   `.add(element)`, `.remove(element)` | Set |
+| Last-Write-Wins Set | `lww-set` | `.add(element)`, `.remove(element)` | Set |
+| Observerd-Remove Set | `or-set` | `.add(element)`, `.remove(element)` | Set |
+| Replicable Growable Array | `rga` | `.push(element)`, `.insertAt(pos, element)`, `.removeAt(pos)`, `.set(pos, element)` | Array |
+
 
 (For a detailed explanation of these types, you can check out [this document](http://hal.upmc.fr/inria-00555588/document).)
 
