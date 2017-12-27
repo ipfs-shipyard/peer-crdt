@@ -141,9 +141,9 @@ Defines a new CRDT type with a given name and definition.
 
 The definition is an object with the following attributes:
 
-* first: a function that returns the initial value
-* reduce: a function that accepts a message and the previous value and returns the new value
-* mutators: an object containing named mutator functions, which should return the generated message for each mutation
+* `first`: a function that returns the initial value
+* `reduce`: a function that accepts a message and the previous value and returns the new value
+* `mutators`: an object containing named mutator functions, which should return the generated message for each mutation
 
 Example of a G-Counter:
 
