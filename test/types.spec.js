@@ -433,6 +433,127 @@ describe('types', () => {
       ], done)
     })
   })
+
+  describe('treedoc', () => {
+    let instances
+    let last
+
+    before(() => {
+      instances = [
+        myCRDT.create('treedoc', 'treedoc-test', {
+          authenticate: (entry, parents) => 'authentication for 0 ' + JSON.stringify([entry, parents])
+        }),
+        myCRDT.create('treedoc', 'treedoc-test', {
+          authenticate: (entry, parents) => 'authentication for 1 ' + JSON.stringify([entry, parents])
+        })
+      ]
+    })
+
+    before(() => {
+      return Promise.all(instances.map((i) => i.network.start()))
+    })
+
+    after(() => {
+      return Promise.all(instances.map((i) => i.network.stop()))
+    })
+
+    it('converges', function (done) {
+      this.timeout(7000)
+
+      const changes = [0, 0]
+      instances.forEach((instance, i) => instance.on('change', () => { changes[i]++ }))
+
+      instances[0].push('a')
+      instances[1].push('b')
+
+      series([
+        (cb) => setTimeout(cb, 1000),
+        (cb) => {
+          const result1 = instances[0].value()
+          const result2 = instances[1].value()
+          expect(result2).to.deep.equal(result1)
+          expect(result1.sort()).to.deep.equal(['a', 'b'])
+          cb()
+        },
+        (cb) => {
+          instances[0].push('c')
+          instances[1].push('d')
+          cb()
+        },
+        (cb) => setTimeout(cb, 1000),
+        (cb) => {
+          let result
+          instances.forEach((i) => {
+            if (result) {
+              expect(i.value()).to.deep.equal(result)
+            } else {
+              result = i.value()
+            }
+          })
+          expect(result.slice(2).sort()).to.deep.equal(['c', 'd'])
+          expect(instances[1].value()).to.deep.equal(result)
+          expect(result.sort()).to.deep.equal(['a', 'b', 'c', 'd'])
+          cb()
+        },
+        (cb) => {
+          instances[0].removeAt(3)
+          instances[0].removeAt(3)
+          cb()
+        },
+        (cb) => setTimeout(cb, 1000),
+        (cb) => {
+          instances.forEach((i) => {
+            expect(i.value().sort()).to.deep.equal(['a', 'b', 'c'])
+          })
+          cb()
+        },
+        (cb) => {
+          instances[0].set(5, 'e')
+          instances[1].set(5, 'f')
+          cb()
+        },
+        (cb) => setTimeout(cb, 1000),
+        (cb) => {
+          instances.forEach((i) => {
+            const value = i.value()
+            expect(value.slice(3).sort()).to.deep.equal(['e', 'f', null, null, null, null])
+          })
+          cb()
+        },
+        (cb) => {
+          instances[0].insertAt(1, 'g')
+          instances[1].insertAt(1, 'h')
+          cb()
+        },
+        (cb) => setTimeout(cb, 1000),
+        (cb) => {
+          instances.forEach((i) => {
+            const value = last = i.value()
+            expect(value.slice(1, 3).sort()).to.deep.equal(['g', 'h'])
+          })
+          cb()
+        },
+        (cb) => {
+          instances[0].set(2, 'i')
+          instances[0].set(2, 'i')
+          cb()
+        },
+        (cb) => setTimeout(cb, 1000),
+        (cb) => {
+          instances.forEach((i) => {
+            const value = i.value()
+            const expected = last.slice(0, 2).concat(['i', 'i']).concat(last.slice(3))
+            expect(value).to.deep.equal(expected)
+          })
+          cb()
+        },
+        (cb) => {
+          expect(changes).to.deep.equal([16, 16])
+          cb()
+        }
+      ], done)
+    })
+  })
 })
 
 process.on('unhandledRejection', (rej) => {
