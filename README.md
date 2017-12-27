@@ -126,7 +126,7 @@ The following types are built-in:
 | Last-Write-Wins Set | `lww-set` | `.add(element)`, `.remove(element)` | Set |
 | Observerd-Remove Set | `or-set` | `.add(element)`, `.remove(element)` | Set |
 | Replicable Growable Array | `rga` | `.push(element)`, `.insertAt(pos, element)`, `.removeAt(pos)`, `.set(pos, element)` | Array |
-| Simplified TreeDoc | `s-treedoc` |  `.push(element)`, `.insertAt(pos, element)`, `.removeAt(pos)`, `.set(pos, element)`  | Array |
+| TreeDoc | `treedoc` |  `.push(element)`, `.insertAt(pos, element)`, `.removeAt(pos)`, `.set(pos, element)`  | Array |
 
 (For a detailed explanation of these types, you can check out [this document](http://hal.upmc.fr/inria-00555588/document).)
 
