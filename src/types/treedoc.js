@@ -261,7 +261,7 @@ function newPosId (p, f) {
     path = [pPath[0], pPath[1]]
     if (f[1].length > p[1].length) {
       const difference = f[1].substring(p[1].length)
-      uid = p[1] + halfOf(difference)
+      uid = p[1] + halfOf(difference) + cuid()
     } else {
       uid = p[1] + cuid()
     }
