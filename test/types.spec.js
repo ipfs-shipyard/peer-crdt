@@ -434,7 +434,7 @@ describe('types', () => {
     })
   })
 
-  describe.only('treedoc', () => {
+  describe('treedoc', () => {
     let instances
     let last
 
