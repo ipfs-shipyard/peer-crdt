@@ -458,7 +458,7 @@ describe('types', () => {
     })
 
     it('converges', function (done) {
-      this.timeout(7000)
+      this.timeout(8000)
 
       const changes = [0, 0]
       instances.forEach((instance, i) => instance.on('change', () => { changes[i]++ }))
@@ -548,7 +548,20 @@ describe('types', () => {
           cb()
         },
         (cb) => {
-          expect(changes).to.deep.equal([16, 16])
+          instances[0].insertAt(1, 'j')
+          instances[0].insertAt(1, 'j')
+          cb()
+        },
+        (cb) => setTimeout(cb, 1000),
+        (cb) => {
+          instances.forEach((i) => {
+            const value = last = i.value()
+            expect(value.slice(1, 3).sort()).to.deep.equal(['j', 'j'])
+          })
+          cb()
+        },
+        (cb) => {
+          expect(changes).to.deep.equal([18, 18])
           cb()
         }
       ], done)

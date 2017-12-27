@@ -259,13 +259,28 @@ function newPosId (p, f) {
   let uid
   if (pPath && fPath && isSibling(pPath, fPath)) {
     path = [pPath[0], pPath[1]]
-    uid = p[1] + cuid()
+    if (f[1].length > p[1].length) {
+      const difference = f[1].substring(p[1].length)
+      uid = p[1] + halfOf(difference)
+    } else {
+      uid = p[1] + cuid()
+    }
   } else {
     path = newPath(pPath, fPath)
     uid = cuid()
   }
 
   return [path, uid]
+}
+
+function halfOf (s) {
+  let result = []
+  for (let i = 0; i < s.length; i += 4) {
+    const sub = s.substring(i, 4)
+    const acc = Buffer.from(sub).map((byte) => byte >> 1)
+    result.push(Buffer.from(acc).toString())
+  }
+  return result.join('')
 }
 
 function newPath (p, f) {
