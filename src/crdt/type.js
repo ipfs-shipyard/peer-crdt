@@ -44,7 +44,8 @@ module.exports = (typeName, type, id, log, network, create) => {
     _isPeerCRDT: true,
     _type: typeName,
     network: network,
-    value: () => recursiveValue(type.valueOf(state))
+    value: () => recursiveValue(type.valueOf(state)),
+    createForEmbed
   })
 
   self.setMaxListeners(Infinity)
@@ -70,6 +71,19 @@ module.exports = (typeName, type, id, log, network, create) => {
   )
 
   return self
+
+  function createForEmbed (typeName, options) {
+    const newId = id + '/' + cuid()
+    const embeddable = create(typeName, newId, options)
+    if (self.network.isStarted) {
+      embeddable.network.start()
+    } else {
+      self.network.once('started', () => embeddable.network.start())
+    }
+    self.network.once('stopped', () => embeddable.network.stop())
+
+    return embeddable
+  }
 
   function resolveReducerArg (args) {
     if (args) {
@@ -102,6 +116,8 @@ module.exports = (typeName, type, id, log, network, create) => {
       })
     }
 
+    value.on('change', () => self.emit('change'))
+
     return value
   }
 }
@@ -113,9 +129,6 @@ function ensureMutatorIsFunction (mutator) {
 }
 
 function resolveMutatorArg (value) {
-  if (typeof value === 'function') {
-    value = value(cuid())
-  }
   if (value._isPeerCRDT) {
     value = {
       _isPeerCRDT: true,

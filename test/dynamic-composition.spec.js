@@ -12,6 +12,7 @@ const CRDT = require('../')
 
 describe('dynamic composition', () => {
   let myCRDT
+  let embeddable
   let arrays
 
   before(() => {
@@ -41,7 +42,8 @@ describe('dynamic composition', () => {
   })
 
   it('can embed', () => {
-    arrays[0].push(myCRDT.embed('g-counter'))
+    embeddable = arrays[0].createForEmbed('g-counter')
+    arrays[0].push(embeddable)
   })
 
   it('has value', (done) => {
@@ -54,6 +56,24 @@ describe('dynamic composition', () => {
     arrays[1].once('change', () => {
       expect(arrays[1].value()).to.deep.equal([0])
       if (!(--pending)) done()
+    })
+  })
+
+  it('can be further embedded', (done) => {
+    arrays[1].push(embeddable)
+    arrays[0].once('change', () => {
+      expect(arrays[0].value()).to.deep.equal([0, 0])
+      done()
+    })
+  })
+
+  it('cascades changes', (done) => {
+    embeddable.increment()
+    arrays[0].once('change', () => {
+      arrays[0].once('change', () => {
+        expect(arrays[0].value()).to.deep.equal([1, 1])
+        done()
+      })
     })
   })
 })

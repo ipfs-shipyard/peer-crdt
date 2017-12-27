@@ -88,6 +88,21 @@ myCrdtInstance.on('change', () => {
 })
 ```
 
+# Dynamic composition
+
+You can use a CRDT as a value of another CRDT. For that, you should use `crdt.createForEmbed(type)` like this:
+
+```js
+const array = myCRDT.create('rga', 'embedding-test', options)
+
+const counter = array.createForEmbed('g-counter')
+array.push(counter)
+
+array.once('change', () => {
+  console.log(array.value()) // [0]
+})
+```
+
 ## Options
 
 Here are the options for the `CRDT.create` and composed CRDT constructor are:
