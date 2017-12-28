@@ -144,7 +144,7 @@ The following types are built-in:
 
 | Name | Identifier | Mutators | Value Type |
 |------|------------|----------|------------|
-| Last-Write-Wins Register | `lww-register` |  `.set(key, value)`  | Set |
+| Last-Write-Wins Register | `lww-register` |  `.set(key, value)`  | Map |
 
 (TreeDoc is explained in [this document](https://hal.inria.fr/inria-00445975/document))
 
