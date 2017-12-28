@@ -567,6 +567,81 @@ describe('types', () => {
       ], done)
     })
   })
+
+  describe('lww-register', () => {
+    let instances
+
+    before(() => {
+      instances = [
+        myCRDT.create('lww-register', 'lww-register-test', {
+          authenticate: (entry, parents) => 'authentication for 0 ' + JSON.stringify([entry, parents])
+        }),
+        myCRDT.create('lww-register', 'lww-register-test', {
+          authenticate: (entry, parents) => 'authentication for 1 ' + JSON.stringify([entry, parents])
+        })
+      ]
+    })
+
+    before(() => {
+      return Promise.all(instances.map((i) => i.network.start()))
+    })
+
+    after(() => {
+      return Promise.all(instances.map((i) => i.network.stop()))
+    })
+
+    it('converges', function (done) {
+      this.timeout(3000)
+      const changes = [0, 0]
+      instances.forEach((instance, i) => instance.on('change', () => { changes[i]++ }))
+
+      instances[0].set('a', 'b')
+      instances[1].set('a', 'c')
+
+      series([
+        (cb) => setTimeout(cb, 1000),
+        (cb) => {
+          let result
+          instances.forEach((i) => {
+            const r = i.value().get('a')
+            if (!result) {
+              result = r
+            } else {
+              expect(r).to.equal(result)
+            }
+            expect(r).to.be.oneOf(['b', 'c'])
+          })
+          cb()
+        },
+        (cb) => {
+          instances[0].set('d', 'e')
+          instances[1].set('e', 'f')
+          cb()
+        },
+        (cb) => setTimeout(cb, 1000),
+        (cb) => {
+          let result
+          instances.forEach((i) => {
+            const value = i.value()
+            expect(value.get('d')).to.equal('e')
+            expect(value.get('e')).to.equal('f')
+
+            const r = [...value].sort()
+            if (!result) {
+              result = r
+            } else {
+              expect(r).to.deep.equal(result)
+            }
+          })
+          cb()
+        },
+        (cb) => {
+          expect(changes).to.deep.equal([4, 4])
+          cb()
+        }
+      ], done)
+    })
+  })
 })
 
 process.on('unhandledRejection', (rej) => {

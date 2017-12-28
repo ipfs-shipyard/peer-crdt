@@ -117,16 +117,34 @@ All the types in this package are operation-based CRDTs.
 
 The following types are built-in:
 
+## Counters
+
 | Name | Identifier | Mutators | Value Type |
 |------|------------|----------|------------|
 | Increment-only Counter | `g-counter` | `.increment()` | int |
 | PN-Counter | `pn-counter` |   `.increment()`,`.decrement()` | int |
+
+## Sets
+
+| Name | Identifier | Mutators | Value Type |
+|------|------------|----------|------------|
 | Grow-Only Set | `g-set` | `.add(element)` | Set |
 | Two-Phase Set | `2p-set` |   `.add(element)`, `.remove(element)` | Set |
 | Last-Write-Wins Set | `lww-set` | `.add(element)`, `.remove(element)` | Set |
 | Observerd-Remove Set | `or-set` | `.add(element)`, `.remove(element)` | Set |
+
+## Arrays
+
+| Name | Identifier | Mutators | Value Type |
+|------|------------|----------|------------|
 | Replicable Growable Array | `rga` | `.push(element)`, `.insertAt(pos, element)`, `.removeAt(pos)`, `.set(pos, element)` | Array |
 | TreeDoc | `treedoc` |  `.push(element)`, `.insertAt(pos, element)`, `.removeAt(pos)`, `.set(pos, element)`  | Array |
+
+## Registers
+
+| Name | Identifier | Mutators | Value Type |
+|------|------------|----------|------------|
+| Last-Write-Wins Register | `lww-register` |  `.set(key, value)`  | Set |
 
 (TreeDoc is explained in [this document](https://hal.inria.fr/inria-00445975/document))
 
