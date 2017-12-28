@@ -642,6 +642,78 @@ describe('types', () => {
       ], done)
     })
   })
+
+  describe('mv-register', () => {
+    let instances
+
+    before(() => {
+      instances = [
+        myCRDT.create('mv-register', 'mv-register-test', {
+          authenticate: (entry, parents) => 'authentication for 0 ' + JSON.stringify([entry, parents])
+        }),
+        myCRDT.create('mv-register', 'mv-register-test', {
+          authenticate: (entry, parents) => 'authentication for 1 ' + JSON.stringify([entry, parents])
+        })
+      ]
+    })
+
+    before(() => {
+      return Promise.all(instances.map((i) => i.network.start()))
+    })
+
+    after(() => {
+      return Promise.all(instances.map((i) => i.network.stop()))
+    })
+
+    it('converges', function (done) {
+      this.timeout(4000)
+      const changes = [0, 0]
+      instances.forEach((instance, i) => instance.on('change', () => { changes[i]++ }))
+
+      instances[0].set('a', 'b')
+      instances[1].set('a', 'c')
+
+      series([
+        (cb) => setTimeout(cb, 1000),
+        (cb) => {
+          instances.forEach((i) => {
+            const r = i.value().get('a').sort()
+            expect(r).to.deep.equal(['b', 'c'])
+          })
+          cb()
+        },
+        (cb) => {
+          instances[0].set('a', 'd')
+          instances[1].set('a', 'e')
+          cb()
+        },
+        (cb) => setTimeout(cb, 1000),
+        (cb) => {
+          instances.forEach((i) => {
+            const r = i.value().get('a').sort()
+            expect(r).to.deep.equal(['d', 'e'])
+          })
+          cb()
+        },
+        (cb) => {
+          instances[0].set('a', 'f')
+          cb()
+        },
+        (cb) => setTimeout(cb, 1000),
+        (cb) => {
+          instances.forEach((i) => {
+            const r = i.value().get('a').sort()
+            expect(r).to.deep.equal(['f'])
+          })
+          cb()
+        },
+        (cb) => {
+          expect(changes).to.deep.equal([5, 5])
+          cb()
+        }
+      ], done)
+    })
+  })
 })
 
 process.on('unhandledRejection', (rej) => {

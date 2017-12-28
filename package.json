@@ -42,6 +42,7 @@
     "pull-defer": "^0.2.2",
     "pull-pushable": "^2.1.1",
     "pull-stream": "^3.6.1",
-    "pull-through": "^1.0.18"
+    "pull-through": "^1.0.18",
+    "vectorclock": "0.0.0"
   }
 }

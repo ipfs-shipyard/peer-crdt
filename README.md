@@ -145,6 +145,7 @@ The following types are built-in:
 | Name | Identifier | Mutators | Value Type |
 |------|------------|----------|------------|
 | Last-Write-Wins Register | `lww-register` |  `.set(key, value)`  | Map |
+| Multi-Value Register | `mv-register` |  `.set(key, value)`  | Map (maps a key to an array of concurrent values) |
 
 (TreeDoc is explained in [this document](https://hal.inria.fr/inria-00445975/document))
 
