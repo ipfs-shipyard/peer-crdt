@@ -2,13 +2,31 @@
 
 module.exports = {
   first: () => [new Map(), new Map()],
-  reduce: (message, previous) => previous.map((previousMap, i) => {
-    const map = new Map([...previousMap])
-    if (message[i]) {
-      map.set(message[i][1], message[i][0])
+  reduce: (message, state) => {
+    const add = message[0]
+
+    if (add) {
+      const adds = state[0]
+      const [timestamp, elem] = add
+      const previousTimestamp = adds.get(elem)
+      if (!previousTimestamp || previousTimestamp < timestamp) {
+        adds.set(elem, timestamp)
+      }
     }
-    return map
-  }),
+
+    const remove = message[1]
+
+    if (remove) {
+      const removes = state[1]
+      const [timestamp, elem] = remove
+      const previousTimestamp = removes.get(elem)
+      if (!previousTimestamp || previousTimestamp < timestamp) {
+        removes.set(elem, timestamp)
+      }
+    }
+
+    return state
+  },
 
   valueOf: (state) => {
     const adds = Array.from(state[0].entries())
