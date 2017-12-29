@@ -107,8 +107,15 @@ array.once('change', () => {
 
 Here are the options for the `CRDT.create` and composed CRDT constructor are:
 
-* `network`: a network plugin constructor. Should be a function with the following signature: `function (id, log)` and return an instance of [`Network`](#network)
+* `network`: a network plugin constructor. Should be a function with the following signature: `function (id, log, onRemoteHead)` and return an instance of [`Network`](#network)
 * `store`: a constructor function with thw following signature: `function (id)`, which returns an implementation of the `Store` interface
+* `authenticate`: a function that's used to generate the authentication data for a certain log entry. It will be called with the log entry (Object) and an array of parent entry ids (string), like this:
+
+```js
+async function authenticate (entry, parents) {
+  return await authenticateSomehow(entry, parents)
+}
+```
 
 
 # Built-in types
