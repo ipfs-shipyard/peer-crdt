@@ -217,6 +217,9 @@ class Log extends EventEmitter {
 
   _entryStream () {
     return pull.asyncMap((entryId, _callback) => {
+      if (!entryId) {
+        return _callback()
+      }
       const callback = once(_callback)
       this._store.get(entryId)
         .then((entry) => {
