@@ -1,6 +1,6 @@
 {
   "name": "peer-crdt",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Peer CRDT",
   "main": "src/index.js",
   "scripts": {
