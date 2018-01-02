@@ -38,7 +38,10 @@ function createNetworkWrapper (id, log, createNetwork) {
 
   const network = createNetwork(id, log, onRemoteHead)
 
-  return Object.assign(new EventEmitter(), {
+  const networkWrapper = new EventEmitter()
+  networkWrapper.setMaxListeners(Infinity)
+
+  return Object.assign(networkWrapper, {
     isStarted: false,
     async start () {
       await network.start()

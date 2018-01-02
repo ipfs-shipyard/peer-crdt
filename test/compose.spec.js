@@ -11,7 +11,7 @@ const Network = require('./helpers/network')
 const CRDT = require('../')
 const gCounter = require('./helpers/g-counter-type')
 
-describe('CRDT', () => {
+describe('compose', () => {
   let myCRDT
   let crdt
   let instance
@@ -41,7 +41,7 @@ describe('CRDT', () => {
   })
 
   it('can mutate instance from root', (done) => {
-    instance.once('change', () => {
+    instance.once('deep change', () => {
       expect(instance.value()).to.deep.equal({
         a: 0,
         b: 1,
@@ -56,7 +56,7 @@ describe('CRDT', () => {
   })
 
   it('can mutate instance from deep', (done) => {
-    instance.once('change', () => {
+    instance.once('deep change', () => {
       expect(instance.value()).to.deep.equal({
         a: 0,
         b: 1,

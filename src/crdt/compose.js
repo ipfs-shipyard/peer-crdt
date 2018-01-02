@@ -19,7 +19,10 @@ module.exports = function compose (create, schema, options) {
         value = create(value, path, options)
       }
       networks.push(value.network)
-      value.on('change', () => setImmediate(() => instance.emit('change')))
+      value.on('change', () => {
+        instance.emit('deep change')
+      })
+      value.on('deep change', () => instance.emit('deep change'))
       instance[key] = value
     })
 

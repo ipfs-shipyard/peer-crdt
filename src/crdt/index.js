@@ -42,7 +42,9 @@ function create (typeName, id, options) {
 
   const log = Log(id, options.store(id), options.authenticate)
   const network = Network(id, log, options.network)
-  const createDelegate = (typeName, id, moreOptions) => create(typeName, id, Object.assign({}, options, moreOptions))
+  const createDelegate = (typeName, id, moreOptions) => {
+    return create(typeName, id, Object.assign({}, options, moreOptions))
+  }
 
   return Type(typeName, type, id, log, network, createDelegate)
 }

@@ -13,6 +13,8 @@ module.exports = (typeName, type, id, log, network, create) => {
     throw new Error('type should have a .reduce function')
   }
 
+  const embeds = new Map()
+
   let state = type.first()
 
   const mutators = type.mutators || {}
@@ -50,6 +52,11 @@ module.exports = (typeName, type, id, log, network, create) => {
 
   self.setMaxListeners(Infinity)
 
+  let changesToEmit = []
+  const changed = (e) => {
+    changesToEmit.push(e)
+  }
+
   let lastEmitted = new Set()
 
   pull(
@@ -62,8 +69,13 @@ module.exports = (typeName, type, id, log, network, create) => {
 
       lastEmitted.add(entry.id)
       const value = resolveReducerArg(entry.value)
-      state = type.reduce(value, state)
-      self.emit('change', entry.id)
+      state = type.reduce.call(null, value, state, changed)
+      const changes = changesToEmit
+      changesToEmit = []
+      changes.forEach((change) => {
+        change.auth = entry.auth
+        self.emit('change', change)
+      })
     }),
     pull.onEnd((err) => {
       throw err || new Error('follow stream should not have ended')
@@ -81,6 +93,8 @@ module.exports = (typeName, type, id, log, network, create) => {
       self.network.once('started', () => embeddable.network.start())
     }
     self.network.once('stopped', () => embeddable.network.stop())
+
+    embeds.set(newId, embeddable)
 
     return embeddable
   }
@@ -106,17 +120,24 @@ module.exports = (typeName, type, id, log, network, create) => {
   }
 
   function reducerArgToCRDT (value) {
-    value = create(value._type, value._peerCRDTId)
-    self.network.once('stopped', () => value.network.stop())
-    if (self.network.isStarted) {
-      value.network.start()
+    const embedId = value._peerCRDTId
+    if (embeds.has(embedId)) {
+      // use the cached embed if we have it
+      value = embeds.get(embedId)
     } else {
-      self.network.once('started', () => {
+      value = create(value._type, embedId)
+      self.network.once('stopped', () => value.network.stop())
+      if (self.network.isStarted) {
         value.network.start()
-      })
+      } else {
+        self.network.once('started', () => {
+          value.network.start()
+        })
+      }
     }
 
-    value.on('change', () => self.emit('change'))
+    value.on('change', () => self.emit('deep change'))
+    value.on('deep change', () => self.emit('deep change'))
 
     return value
   }

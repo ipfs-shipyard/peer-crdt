@@ -60,21 +60,36 @@ describe('dynamic composition', () => {
   })
 
   it('can be further embedded', (done) => {
-    arrays[1].push(embeddable)
     arrays[0].once('change', () => {
       expect(arrays[0].value()).to.deep.equal([0, 0])
       done()
     })
+    arrays[1].push(embeddable)
   })
 
   it('cascades changes', (done) => {
+    arrays[0].once('deep change', () => {
+      expect(arrays[0].value()).to.deep.equal([1, 1])
+      done()
+    })
     embeddable.increment()
-    arrays[0].once('change', () => {
-      arrays[0].once('change', () => {
-        expect(arrays[0].value()).to.deep.equal([1, 1])
-        done()
+  })
+
+  it('mirrors embeds', (done) => {
+    const embeddable = arrays[0].createForEmbed('g-counter')
+    arrays[0].once('change', (event) => {
+      const otherEmbeddable = event.value
+      otherEmbeddable.once('change', () => {
+        expect(otherEmbeddable.value()).to.equal(1)
+        otherEmbeddable.once('change', () => {
+          expect(otherEmbeddable.value()).to.equal(2)
+          done()
+        })
       })
     })
+    arrays[0].push(embeddable)
+    embeddable.increment()
+    embeddable.increment()
   })
 })
 

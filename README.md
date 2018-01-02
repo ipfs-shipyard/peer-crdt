@@ -83,7 +83,7 @@ const schema = {
 const MyCRDT = CRDT.compose(schema)
 const myCrdtInstance = MyCRDT(id)
 
-myCrdtInstance.on('change', () => {
+myCrdtInstance.on('deep change', () => {
   console.log('new value:', myCrdtInstance.value())
 })
 ```
@@ -98,8 +98,14 @@ const array = myCRDT.create('rga', 'embedding-test', options)
 const counter = array.createForEmbed('g-counter')
 array.push(counter)
 
-array.once('change', () => {
+array.once('change', (event) => {
   console.log(array.value()) // [0]
+
+  array.on('deep change', () => {
+    console.log(array.value()) // [1]
+  })
+
+  event.value.increment()
 })
 ```
 

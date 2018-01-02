@@ -49,7 +49,7 @@ describe('networking', () => {
   })
 
   it('can change one in root, and is reflected on the other', (done) => {
-    instances[1].once('change', () => {
+    instances[1].once('deep change', () => {
       expect(instances[1].value()).to.deep.equal({
         a: 1,
         b: 0,
@@ -61,13 +61,13 @@ describe('networking', () => {
     })
 
     // nothing should happen in third instance because of different id
-    instances[2].once('change', () => { throw new Error('should not change') })
+    instances[2].once('deep change', () => { throw new Error('should not change') })
 
     instances[0].a.increment()
   })
 
   it('can change one in depth, and is reflected on the other', (done) => {
-    instances[0].once('change', () => {
+    instances[0].once('deep change', () => {
       expect(instances[0].value()).to.deep.equal({
         a: 1,
         b: 0,
@@ -77,7 +77,7 @@ describe('networking', () => {
       })
       done()
     })
-    instances[2].once('change', () => { throw new Error('should not change') })
+    instances[2].once('deep change', () => { throw new Error('should not change') })
     instances[1].c.d.increment()
   })
 

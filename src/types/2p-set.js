@@ -4,9 +4,13 @@ const GSet = require('./g-set')
 
 module.exports = {
   first: () => [GSet.first(), GSet.first()],
-  reduce: (message, previous) => [
-    GSet.reduce(message[0], previous[0]),
-    GSet.reduce(message[1], previous[1])
+  reduce: (message, previous, changed) => [
+    GSet.reduce(message[0], previous[0], (event) => {
+      changed({ type: 'add', value: event.value })
+    }),
+    GSet.reduce(message[1], previous[1], (event) => {
+      changed({ type: 'remove', value: event.value })
+    })
   ],
   valueOf: (state) => {
     const tombstones = state[1]

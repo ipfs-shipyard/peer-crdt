@@ -7,7 +7,7 @@ const pull = require('pull-stream')
 
 exports = module.exports = {
   first: () => [[], null, null],
-  reduce: (message, tree) => {
+  reduce: (message, tree, changed) => {
     let [nodes, left, right] = tree
     const insert = message[0]
     if (insert) {
@@ -38,6 +38,7 @@ exports = module.exports = {
 
       nodes.push(insert)
       parent[0] = nodes.sort(sortSiblings)
+      changed({ type: 'insert', id: insert[0], atom: insert[1] })
     }
 
     const remove = message[1]
@@ -67,6 +68,7 @@ exports = module.exports = {
         }
 
         [nodes, left, right] = parent
+        changed({ type: 'delete', id: remove[0] })
       }
 
       const [removePath, removeDisambiguator] = remove

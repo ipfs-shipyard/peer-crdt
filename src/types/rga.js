@@ -17,7 +17,7 @@ exports = module.exports = {
     new Set(), // VR
     new Map()], // E
 
-  reduce: (message, previous) => {
+  reduce: (message, previous, changed) => {
     const state = [
       new Map([...previous[0]]),
       new Set([...previous[1]]),
@@ -43,12 +43,14 @@ exports = module.exports = {
         }
         edges.set(l, id)
         edges.set(id, r)
+        changed({type: 'insert', value, pos: posFor(id, state)})
       }
     }
 
     const remove = message[1]
     if (remove) {
       const removedVertices = state[1]
+      changed({type: 'remove', pos: posFor(remove, state)})
       removedVertices.add(remove)
     }
 
@@ -167,4 +169,19 @@ exports = module.exports = {
       return pull.values(messages)
     }
   }
+}
+
+function posFor (id, state) {
+  const edges = state[2]
+  let it = null
+  let pos = -1
+  do {
+    pos++
+    it = edges.get(it)
+  } while (it && it !== id)
+  if (!it) {
+    pos = -1
+  }
+
+  return pos
 }

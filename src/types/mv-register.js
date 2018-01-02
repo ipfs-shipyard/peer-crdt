@@ -8,7 +8,7 @@ module.exports = {
     cuid(), // id
     new Map() // Values with VectorClocks
   ],
-  reduce: (message, state) => {
+  reduce: (message, state, changed) => {
     const [clock, key, value] = message
     const values = state[1]
     let existingValues = values.get(key) || []
@@ -39,6 +39,7 @@ module.exports = {
     }
 
     values.set(key, existingValues)
+    changed({ type: 'set', key, values: existingValues })
 
     return state
   },

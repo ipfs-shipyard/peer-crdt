@@ -2,7 +2,7 @@
 
 module.exports = {
   first: () => [new Map(), new Map()],
-  reduce: (message, state) => {
+  reduce: (message, state, changed) => {
     const [timestamps, values] = state
     const [timestamp, key, value] = message
     const previousTimestamp = timestamps.get(key)
@@ -21,6 +21,7 @@ module.exports = {
     if (replace) {
       timestamps.set(key, timestamp)
       values.set(key, value)
+      changed({ type: 'set', key: key, value: value })
     }
     return state
   },

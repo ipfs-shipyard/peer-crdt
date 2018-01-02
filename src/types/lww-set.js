@@ -2,7 +2,7 @@
 
 module.exports = {
   first: () => [new Map(), new Map()],
-  reduce: (message, state) => {
+  reduce: (message, state, changed) => {
     const add = message[0]
 
     if (add) {
@@ -10,6 +10,7 @@ module.exports = {
       const [timestamp, elem] = add
       const previousTimestamp = adds.get(elem)
       if (!previousTimestamp || previousTimestamp < timestamp) {
+        changed({ type: 'add', value: elem })
         adds.set(elem, timestamp)
       }
     }
@@ -21,6 +22,7 @@ module.exports = {
       const [timestamp, elem] = remove
       const previousTimestamp = removes.get(elem)
       if (!previousTimestamp || previousTimestamp < timestamp) {
+        changed({ type: 'remove', value: elem })
         removes.set(elem, timestamp)
       }
     }
