@@ -57,17 +57,10 @@ module.exports = (typeName, type, id, log, network, create) => {
     changesToEmit.push(e)
   }
 
-  let lastEmitted = new Set()
-
   pull(
     log.follow(),
     pull.filter((entry) => entry.value !== undefined && entry.value !== null),
     pull.map((entry) => {
-      if (lastEmitted.has(entry.id)) {
-        return
-      }
-
-      lastEmitted.add(entry.id)
       const value = resolveReducerArg(entry.value)
       state = type.reduce.call(null, value, state, changed)
       const changes = changesToEmit

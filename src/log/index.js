@@ -157,11 +157,6 @@ class Log extends EventEmitter {
     let stopped = false
     const p = pushable()
 
-    const track = pull.map((entry) => {
-      last = entry.id
-      return entry
-    })
-
     const onNewHead = () => {
       hasMore = true
     }
@@ -173,7 +168,8 @@ class Log extends EventEmitter {
         this.since(since),
         through(
           (entry) => {
-            p.push(entry)
+            last = entry.id
+            setImmediate(() => p.push(entry))
           },
           function (end) {
             if (hasMore) {
@@ -187,8 +183,8 @@ class Log extends EventEmitter {
                   }
                 })
               }
-              this.queue(null)
             }
+            this.queue(null)
           }
         ),
         pull.onEnd((err) => {
@@ -201,18 +197,15 @@ class Log extends EventEmitter {
 
     pullSince(since)
 
-    const retPull = pull(
-      p,
-      track
-    )
+    const pEnd = p.end
 
-    retPull.end = () => {
+    p.end = () => {
       stopped = true
       this.removeListener('new head', onNewHead)
-      p.end()
+      pEnd.call(p)
     }
 
-    return retPull
+    return p
   }
 
   _entryStream () {
