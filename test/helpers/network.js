@@ -51,6 +51,9 @@ class Network {
     return new Promise((resolve, reject) => {
       virtualNetwork.once(id, (message) => {
         const entry = JSON.parse(message)
+        if (entry && entry[0]) {
+          entry[0] = Buffer.from(entry[0], 'hex')
+        }
         resolve(entry)
       })
       virtualNetwork.emit('want', JSON.stringify(id))
@@ -63,6 +66,9 @@ class Network {
     if (has) {
       const entry = await this._log.get(wantId)
       if (entry) {
+        if (entry[0]) {
+          entry[0] = Buffer.from(entry[0]).toString('hex')
+        }
         virtualNetwork.broadcast(wantId, JSON.stringify(entry))
       }
     }

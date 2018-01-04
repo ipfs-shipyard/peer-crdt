@@ -123,6 +123,26 @@ async function authenticate (entry, parents) {
 }
 ```
 
+* `encrypt`: an optional function that accepts a value object and resolves to a buffer, someting like this:
+
+```js
+async function encrypt(value) {
+  const serialized = Buffer.from(JSON.stringify(value))
+  const buffer = await encryptSomehow(serialized)
+  return buffer
+}
+```
+
+(if no `options.encrypt` is provided, the node is on read-only mode and cannot create entries).
+
+* `decrypt`: a __required__ function that accepts an encrypted message buffer and resolves to a value object, something like this:
+
+```js
+async function decrypt(buffer) {
+  const serialized = await decryptSomehow(buffer)
+  return JSON.parse(Buffer.from(serialized).toString())
+}
+```
 
 # Built-in types
 

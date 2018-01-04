@@ -10,6 +10,8 @@ const Store = require('./helpers/store')
 const Network = require('./helpers/network')
 const CRDT = require('../')
 const gCounter = require('./helpers/g-counter-type')
+const encrypt = require('./helpers/encrypt')
+const decrypt = require('./helpers/decrypt')
 
 describe('networking', () => {
   let myCRDT
@@ -22,7 +24,9 @@ describe('networking', () => {
     myCRDT = CRDT.defaults({
       store: (id) => new Store(id),
       network: (id, log, onRemoteHead) => new Network(id, log, onRemoteHead, 100),
-      authenticate: (entry, parents) => 'authentication for ' + entry
+      authenticate: (entry, parents) => 'authentication for ' + entry,
+      encrypt,
+      decrypt
     })
   })
 
@@ -84,4 +88,8 @@ describe('networking', () => {
   it('can stop both instances', () => {
     return Promise.all(instances.map((instance) => instance.network.stop()))
   })
+})
+
+process.on('unhandledRejection', (rej) => {
+  console.log(rej)
 })

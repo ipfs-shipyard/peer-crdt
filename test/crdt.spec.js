@@ -10,6 +10,8 @@ const Store = require('./helpers/store')
 const Network = require('./helpers/network')
 const CRDT = require('../')
 const gCounter = require('./helpers/g-counter-type')
+const encrypt = require('./helpers/encrypt')
+const decrypt = require('./helpers/decrypt')
 
 describe('CRDT', () => {
   let myCRDT
@@ -23,7 +25,9 @@ describe('CRDT', () => {
     myCRDT = CRDT.defaults({
       store: (id) => new Store(id),
       network: (id) => new Network(id),
-      authenticate: (entry, parents) => 'authentication for ' + entry
+      authenticate: (entry, parents) => 'authentication for ' + entry,
+      encrypt,
+      decrypt
     })
   })
 

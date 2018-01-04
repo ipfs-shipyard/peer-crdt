@@ -7,7 +7,13 @@ class MemoryStore {
     this._entries = {}
   }
 
-  put (entry) {
+  put (_entry) {
+    let value = _entry[0]
+    const entry = [..._entry]
+    if (value !== null) {
+      value = Buffer.from(value).toString('hex')
+      entry[0] = value
+    }
     const serialized = JSON.stringify(entry)
     return hashFor(serialized).then((id) => {
       this._entries[id] = serialized
@@ -20,7 +26,13 @@ class MemoryStore {
       setImmediate(() => {
         const serialized = this._entries[id]
         if (serialized) {
-          resolve(JSON.parse(serialized))
+          const entry = JSON.parse(serialized)
+          let value = entry[0]
+          if (value !== null) {
+            value = Buffer.from(value, 'hex')
+            entry[0] = value
+          }
+          resolve(entry)
         } else {
           resolve(null)
         }

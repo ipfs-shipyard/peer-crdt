@@ -11,6 +11,8 @@ const series = require('async/series')
 const Store = require('./helpers/store')
 const Network = require('./helpers/network')
 const CRDT = require('../')
+const encrypt = require('./helpers/encrypt')
+const decrypt = require('./helpers/decrypt')
 
 describe('types', () => {
   let myCRDT
@@ -18,7 +20,9 @@ describe('types', () => {
   before(() => {
     myCRDT = CRDT.defaults({
       store: (id) => new Store(id),
-      network: (id, log, onRemoteHead) => new Network(id, log, onRemoteHead, 100)
+      network: (id, log, onRemoteHead) => new Network(id, log, onRemoteHead, 100),
+      encrypt,
+      decrypt
     })
   })
 

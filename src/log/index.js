@@ -11,7 +11,7 @@ const once = require('once')
 let ref = 0
 
 class Log extends EventEmitter {
-  constructor (id, store, authenticateFn) {
+  constructor (id, store, authenticateFn, options) {
     super()
     this.setMaxListeners(Infinity)
 
@@ -19,11 +19,17 @@ class Log extends EventEmitter {
     this._id = id
     this._store = store
     this._authenticateFn = authenticateFn
+    this._options = options
     this._limit = pLimit(1)
   }
 
-  append (value, auth, parents) {
-    return this._limit(() => this._append(value, auth, parents))
+  async append (value, auth, parents) {
+    const encryptedValue = await this._encrypt(value)
+    return this.appendEncrypted(encryptedValue, auth, parents)
+  }
+
+  appendEncrypted (encryptedValue, auth, parents) {
+    return this._limit(() => this._append(encryptedValue, auth, parents))
   }
 
   async _append (value, auth, parents) {
@@ -189,6 +195,7 @@ class Log extends EventEmitter {
         ),
         pull.onEnd((err) => {
           if (err) {
+            console.log('ERR:', err)
             p.end(err)
           }
         })
@@ -214,14 +221,35 @@ class Log extends EventEmitter {
         return _callback()
       }
       const callback = once(_callback)
-      this._store.get(entryId)
+      this.get(entryId)
         .then((entry) => {
-          setImmediate(() => callback(null, {
-            id: entryId,
-            value: entry && entry[0],
-            auth: entry && entry[1],
-            parents: (entry && entry[2]) || []
-          }))
+          if (!entry) {
+            return callback(null)
+          }
+          let value = entry[0]
+          if (this._options.decrypt) {
+            this._decrypt(value)
+              .then((decryptedValue) => {
+                setImmediate(() => {
+                  callback(null, {
+                    id: entryId,
+                    value: decryptedValue,
+                    auth: entry[1],
+                    parents: entry[2]
+                  })
+                })
+              })
+              .catch(callback)
+          } else {
+            setImmediate(() => {
+              callback(null, {
+                id: entryId,
+                value: entry && entry[0],
+                auth: entry && entry[1],
+                parents: (entry && entry[2]) || []
+              })
+            })
+          }
         })
         .catch(callback)
     })
@@ -239,7 +267,7 @@ class Log extends EventEmitter {
       return false
     }
 
-    const ancestor = await this._store.get(ancestorId)
+    const ancestor = await this.get(ancestorId)
     if (!ancestor) {
       return false
     }
@@ -260,11 +288,27 @@ class Log extends EventEmitter {
   getHead () {
     return this._limit(() => this._store.getHead())
   }
+
+  // Encrypt / Decrypt
+
+  async _encrypt (value) {
+    if (value === null) {
+      return null
+    }
+    return this._options.encrypt(value)
+  }
+
+  async _decrypt (buffer) {
+    if (buffer === null) {
+      return null
+    }
+    return this._options.decrypt(Buffer.from(buffer))
+  }
 }
 
 module.exports = createLog
 
-function createLog (id, store, authenticate) {
+function createLog (id, store, authenticate, options) {
   if (!id) {
     throw new Error('need log id')
   }
@@ -281,5 +325,17 @@ function createLog (id, store, authenticate) {
     throw new Error('need authentication function')
   }
 
-  return new Log(id, store, authenticate)
+  if (!options) {
+    throw new Error('need options')
+  }
+
+  if (typeof options.encrypt !== 'function') {
+    throw new Error('need options.encrypt function')
+  }
+
+  if (typeof options.decrypt !== 'function') {
+    throw new Error('need options.decrypt function')
+  }
+
+  return new Log(id, store, authenticate, options)
 }

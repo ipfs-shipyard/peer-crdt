@@ -9,8 +9,11 @@ const pull = require('pull-stream')
 
 const Log = require('../src/log')
 const Store = require('./helpers/store')
+const encrypt = require('./helpers/encrypt')
+const decrypt = require('./helpers/decrypt')
 
 describe('log', () => {
+  const logOptions = { encrypt, decrypt }
   const entryIds = []
 
   describe('constructor', () => {
@@ -27,7 +30,7 @@ describe('log', () => {
     })
 
     it('can be created', () => {
-      Log('some string', new Store(), () => {})
+      Log('some string', new Store(), () => {}, logOptions)
     })
   })
 
@@ -36,7 +39,7 @@ describe('log', () => {
     let entryId
 
     before(() => {
-      log = Log('a', new Store(), async (value, parents) => 'auth for ' + value)
+      log = Log('a', new Store(), async (value, parents) => 'auth for ' + value, logOptions)
     })
 
     it('appends', () => {
@@ -63,7 +66,7 @@ describe('log', () => {
       })
 
       it('empty if empty log', (done) => {
-        const log = Log('b', new Store(), async (entry) => 'auth for ' + entry)
+        const log = Log('b', new Store(), async (entry) => 'auth for ' + entry, logOptions)
         pull(
           log.since(),
           pull.collect((err, entries) => {
@@ -80,25 +83,25 @@ describe('log', () => {
           pull.collect((err, entries) => {
             expect(err).to.not.exist()
             expect(entries).to.deep.equal([
-              { id: '0414bc2923fac741e4ccc8b71ffe3ea8106fffd15f0adcfd70aa3083b0e2c972',
+              { id: '0dc13aa88efbf83f66f6c4813b55205ad2ea0804cb6a43d7037303994bb2b01b',
                 value: 1,
                 auth: 'auth for 1',
                 parents: [] },
-              { id: 'b553fc82acf93a408b2272c728a943ed8641f1bcad88e61e26b775e0431c67be',
+              { id: '4333ec824ed79748d580daedbbf4a0a78e4469571714d7feb409f15c16efb6bd',
                 value: 2,
                 auth: 'auth for 2',
                 parents:
-                 [ '0414bc2923fac741e4ccc8b71ffe3ea8106fffd15f0adcfd70aa3083b0e2c972' ] },
-              { id: 'e3247eb823be0be2325f1a25251310179795387e41f3e0c0075061adbb2ba7c9',
+                 [ '0dc13aa88efbf83f66f6c4813b55205ad2ea0804cb6a43d7037303994bb2b01b' ] },
+              { id: '81fba0584e9b4ac6f853296261e4fa92c0f65ae906aa7bb67da615f687b233c5',
                 value: 3,
                 auth: 'auth for 3',
                 parents:
-                 [ 'b553fc82acf93a408b2272c728a943ed8641f1bcad88e61e26b775e0431c67be' ] },
-              { id: '0c392a1b92842de5c06cdae0b70159dcb0e6b1ae3f776e4af2d75d94b8830482',
+                 [ '4333ec824ed79748d580daedbbf4a0a78e4469571714d7feb409f15c16efb6bd' ] },
+              { id: '5e90a3544f39b9cf95464e3e74016836645aa8c8313c68cfaf0250094de25bc1',
                 value: 4,
                 auth: 'auth for 4',
                 parents:
-                 [ 'e3247eb823be0be2325f1a25251310179795387e41f3e0c0075061adbb2ba7c9' ] } ])
+                 [ '81fba0584e9b4ac6f853296261e4fa92c0f65ae906aa7bb67da615f687b233c5' ] } ])
             done()
           })
         )
@@ -110,25 +113,25 @@ describe('log', () => {
           pull.collect((err, entries) => {
             expect(err).to.not.exist()
             expect(entries).to.deep.equal([
-              { id: '0414bc2923fac741e4ccc8b71ffe3ea8106fffd15f0adcfd70aa3083b0e2c972',
+              { id: '0dc13aa88efbf83f66f6c4813b55205ad2ea0804cb6a43d7037303994bb2b01b',
                 value: 1,
                 auth: 'auth for 1',
                 parents: [] },
-              { id: 'b553fc82acf93a408b2272c728a943ed8641f1bcad88e61e26b775e0431c67be',
+              { id: '4333ec824ed79748d580daedbbf4a0a78e4469571714d7feb409f15c16efb6bd',
                 value: 2,
                 auth: 'auth for 2',
                 parents:
-                 [ '0414bc2923fac741e4ccc8b71ffe3ea8106fffd15f0adcfd70aa3083b0e2c972' ] },
-              { id: 'e3247eb823be0be2325f1a25251310179795387e41f3e0c0075061adbb2ba7c9',
+                 [ '0dc13aa88efbf83f66f6c4813b55205ad2ea0804cb6a43d7037303994bb2b01b' ] },
+              { id: '81fba0584e9b4ac6f853296261e4fa92c0f65ae906aa7bb67da615f687b233c5',
                 value: 3,
                 auth: 'auth for 3',
                 parents:
-                 [ 'b553fc82acf93a408b2272c728a943ed8641f1bcad88e61e26b775e0431c67be' ] },
-              { id: '0c392a1b92842de5c06cdae0b70159dcb0e6b1ae3f776e4af2d75d94b8830482',
+                 [ '4333ec824ed79748d580daedbbf4a0a78e4469571714d7feb409f15c16efb6bd' ] },
+              { id: '5e90a3544f39b9cf95464e3e74016836645aa8c8313c68cfaf0250094de25bc1',
                 value: 4,
                 auth: 'auth for 4',
                 parents:
-                 [ 'e3247eb823be0be2325f1a25251310179795387e41f3e0c0075061adbb2ba7c9' ] } ])
+                 [ '81fba0584e9b4ac6f853296261e4fa92c0f65ae906aa7bb67da615f687b233c5' ] } ])
             done()
           })
         )
@@ -140,25 +143,25 @@ describe('log', () => {
           pull.collect((err, entries) => {
             expect(err).to.not.exist()
             expect(entries).to.deep.equal([
-              { id: '0414bc2923fac741e4ccc8b71ffe3ea8106fffd15f0adcfd70aa3083b0e2c972',
+              { id: '0dc13aa88efbf83f66f6c4813b55205ad2ea0804cb6a43d7037303994bb2b01b',
                 value: 1,
                 auth: 'auth for 1',
                 parents: [] },
-              { id: 'b553fc82acf93a408b2272c728a943ed8641f1bcad88e61e26b775e0431c67be',
+              { id: '4333ec824ed79748d580daedbbf4a0a78e4469571714d7feb409f15c16efb6bd',
                 value: 2,
                 auth: 'auth for 2',
                 parents:
-                 [ '0414bc2923fac741e4ccc8b71ffe3ea8106fffd15f0adcfd70aa3083b0e2c972' ] },
-              { id: 'e3247eb823be0be2325f1a25251310179795387e41f3e0c0075061adbb2ba7c9',
+                 [ '0dc13aa88efbf83f66f6c4813b55205ad2ea0804cb6a43d7037303994bb2b01b' ] },
+              { id: '81fba0584e9b4ac6f853296261e4fa92c0f65ae906aa7bb67da615f687b233c5',
                 value: 3,
                 auth: 'auth for 3',
                 parents:
-                 [ 'b553fc82acf93a408b2272c728a943ed8641f1bcad88e61e26b775e0431c67be' ] },
-              { id: '0c392a1b92842de5c06cdae0b70159dcb0e6b1ae3f776e4af2d75d94b8830482',
+                 [ '4333ec824ed79748d580daedbbf4a0a78e4469571714d7feb409f15c16efb6bd' ] },
+              { id: '5e90a3544f39b9cf95464e3e74016836645aa8c8313c68cfaf0250094de25bc1',
                 value: 4,
                 auth: 'auth for 4',
                 parents:
-                 [ 'e3247eb823be0be2325f1a25251310179795387e41f3e0c0075061adbb2ba7c9' ] } ])
+                 [ '81fba0584e9b4ac6f853296261e4fa92c0f65ae906aa7bb67da615f687b233c5' ] } ])
             done()
           })
         )
@@ -171,16 +174,16 @@ describe('log', () => {
           pull.collect((err, entries) => {
             expect(err).to.not.exist()
             expect(entries).to.deep.equal([
-              { id: 'e3247eb823be0be2325f1a25251310179795387e41f3e0c0075061adbb2ba7c9',
+              { id: '81fba0584e9b4ac6f853296261e4fa92c0f65ae906aa7bb67da615f687b233c5',
                 value: 3,
                 auth: 'auth for 3',
                 parents:
-                 [ 'b553fc82acf93a408b2272c728a943ed8641f1bcad88e61e26b775e0431c67be' ] },
-              { id: '0c392a1b92842de5c06cdae0b70159dcb0e6b1ae3f776e4af2d75d94b8830482',
+                 [ '4333ec824ed79748d580daedbbf4a0a78e4469571714d7feb409f15c16efb6bd' ] },
+              { id: '5e90a3544f39b9cf95464e3e74016836645aa8c8313c68cfaf0250094de25bc1',
                 value: 4,
                 auth: 'auth for 4',
                 parents:
-                 [ 'e3247eb823be0be2325f1a25251310179795387e41f3e0c0075061adbb2ba7c9' ] } ])
+                 [ '81fba0584e9b4ac6f853296261e4fa92c0f65ae906aa7bb67da615f687b233c5' ] } ])
             done()
           })
         )
@@ -193,21 +196,21 @@ describe('log', () => {
           pull.collect((err, entries) => {
             expect(err).to.not.exist()
             expect(entries).to.deep.equal([
-              { id: 'b553fc82acf93a408b2272c728a943ed8641f1bcad88e61e26b775e0431c67be',
+              { id: '4333ec824ed79748d580daedbbf4a0a78e4469571714d7feb409f15c16efb6bd',
                 value: 2,
                 auth: 'auth for 2',
                 parents:
-                 [ '0414bc2923fac741e4ccc8b71ffe3ea8106fffd15f0adcfd70aa3083b0e2c972' ] },
-              { id: 'e3247eb823be0be2325f1a25251310179795387e41f3e0c0075061adbb2ba7c9',
+                 [ '0dc13aa88efbf83f66f6c4813b55205ad2ea0804cb6a43d7037303994bb2b01b' ] },
+              { id: '81fba0584e9b4ac6f853296261e4fa92c0f65ae906aa7bb67da615f687b233c5',
                 value: 3,
                 auth: 'auth for 3',
                 parents:
-                 [ 'b553fc82acf93a408b2272c728a943ed8641f1bcad88e61e26b775e0431c67be' ] },
-              { id: '0c392a1b92842de5c06cdae0b70159dcb0e6b1ae3f776e4af2d75d94b8830482',
+                 [ '4333ec824ed79748d580daedbbf4a0a78e4469571714d7feb409f15c16efb6bd' ] },
+              { id: '5e90a3544f39b9cf95464e3e74016836645aa8c8313c68cfaf0250094de25bc1',
                 value: 4,
                 auth: 'auth for 4',
                 parents:
-                 [ 'e3247eb823be0be2325f1a25251310179795387e41f3e0c0075061adbb2ba7c9' ] } ])
+                 [ '81fba0584e9b4ac6f853296261e4fa92c0f65ae906aa7bb67da615f687b233c5' ] } ])
             done()
           })
         )
@@ -217,7 +220,7 @@ describe('log', () => {
     describe('emits new head on append', () => {
       it('emits', (done) => {
         log.once('new head', (id) => {
-          expect(id).to.equal('5ce9bba9ec28ce1974073f5fced8bc8b4b527fb596c2faaebd74f38d49dae173')
+          expect(id).to.equal('9a0f0b55b5e016aea3b76b9d31fc67393917e189707587b2691a4654b441113d')
           done()
         })
 
@@ -237,41 +240,41 @@ describe('log', () => {
           pull.collect((err, entries) => {
             expect(err).to.not.exist()
             expect(entries).to.deep.equal([
-              { id: '0414bc2923fac741e4ccc8b71ffe3ea8106fffd15f0adcfd70aa3083b0e2c972',
+              { id: '0dc13aa88efbf83f66f6c4813b55205ad2ea0804cb6a43d7037303994bb2b01b',
                 value: 1,
                 auth: 'auth for 1',
                 parents: [] },
-              { id: 'b553fc82acf93a408b2272c728a943ed8641f1bcad88e61e26b775e0431c67be',
+              { id: '4333ec824ed79748d580daedbbf4a0a78e4469571714d7feb409f15c16efb6bd',
                 value: 2,
                 auth: 'auth for 2',
                 parents:
-                 [ '0414bc2923fac741e4ccc8b71ffe3ea8106fffd15f0adcfd70aa3083b0e2c972' ] },
-              { id: 'e3247eb823be0be2325f1a25251310179795387e41f3e0c0075061adbb2ba7c9',
-                value: 3,
-                auth: 'auth for 3',
-                parents:
-                 [ 'b553fc82acf93a408b2272c728a943ed8641f1bcad88e61e26b775e0431c67be' ] },
-              { id: '0c392a1b92842de5c06cdae0b70159dcb0e6b1ae3f776e4af2d75d94b8830482',
-                value: 4,
-                auth: 'auth for 4',
-                parents:
-                 [ 'e3247eb823be0be2325f1a25251310179795387e41f3e0c0075061adbb2ba7c9' ] },
-              { id: '5ce9bba9ec28ce1974073f5fced8bc8b4b527fb596c2faaebd74f38d49dae173',
-                value: 5,
-                auth: 'auth for 5',
-                parents:
-                 [ '0c392a1b92842de5c06cdae0b70159dcb0e6b1ae3f776e4af2d75d94b8830482' ] },
-              { id: '8a27a984f4c4f3e5c08069f29da53230441f140f3a8986ec595f96d7f702b9d3',
+                 [ '0dc13aa88efbf83f66f6c4813b55205ad2ea0804cb6a43d7037303994bb2b01b' ] },
+              { id: '7b1063df90c86d60b1d9280705301b6bbb98b9e072cf144e955385741b21ca0b',
                 value: '2.1',
                 auth: 'auth for 2.1',
                 parents:
-                 [ 'b553fc82acf93a408b2272c728a943ed8641f1bcad88e61e26b775e0431c67be' ] },
-              { id: '0830347da83984090a971e8c378184c96631a859705ee8809829ce18f1f893ba',
+                 [ '4333ec824ed79748d580daedbbf4a0a78e4469571714d7feb409f15c16efb6bd' ] },
+              { id: '81fba0584e9b4ac6f853296261e4fa92c0f65ae906aa7bb67da615f687b233c5',
+                value: 3,
+                auth: 'auth for 3',
+                parents:
+                 [ '4333ec824ed79748d580daedbbf4a0a78e4469571714d7feb409f15c16efb6bd' ] },
+              { id: '5e90a3544f39b9cf95464e3e74016836645aa8c8313c68cfaf0250094de25bc1',
+                value: 4,
+                auth: 'auth for 4',
+                parents:
+                 [ '81fba0584e9b4ac6f853296261e4fa92c0f65ae906aa7bb67da615f687b233c5' ] },
+              { id: '9a0f0b55b5e016aea3b76b9d31fc67393917e189707587b2691a4654b441113d',
+                value: 5,
+                auth: 'auth for 5',
+                parents:
+                 [ '5e90a3544f39b9cf95464e3e74016836645aa8c8313c68cfaf0250094de25bc1' ] },
+              { id: 'd736381053457d521b854535956e3baf2a8aac83b836b85e480e1645948e5fc3',
                 value: null,
                 auth: null,
                 parents:
-                [ '5ce9bba9ec28ce1974073f5fced8bc8b4b527fb596c2faaebd74f38d49dae173',
-                  '8a27a984f4c4f3e5c08069f29da53230441f140f3a8986ec595f96d7f702b9d3' ] } ])
+                [ '7b1063df90c86d60b1d9280705301b6bbb98b9e072cf144e955385741b21ca0b',
+                  '9a0f0b55b5e016aea3b76b9d31fc67393917e189707587b2691a4654b441113d' ] } ])
             done()
           })
         )
@@ -280,15 +283,15 @@ describe('log', () => {
       it('since the merge', (done) => {
         log.append(6).then(() => {
           pull(
-            log.since('0830347da83984090a971e8c378184c96631a859705ee8809829ce18f1f893ba'),
+            log.since('d736381053457d521b854535956e3baf2a8aac83b836b85e480e1645948e5fc3'),
             pull.collect((err, entries) => {
               expect(err).to.not.exist()
               expect(entries).to.deep.equal([
-                { id: '767076c7635a9061d74fc5d1df9ad07722decf7103ab67ff81c6e54e457a8ec3',
+                { id: '564edac7d46057f4e9f256d857145200a794d156065c490cfc4068533a7aee4b',
                   value: 6,
                   auth: 'auth for 6',
                   parents:
-                   [ '0830347da83984090a971e8c378184c96631a859705ee8809829ce18f1f893ba' ] }
+                   [ 'd736381053457d521b854535956e3baf2a8aac83b836b85e480e1645948e5fc3' ] }
               ])
               done()
             })
@@ -317,56 +320,56 @@ describe('log', () => {
           pull.collect((err, entries) => {
             expect(err).to.not.exist()
             expect(entries).to.deep.equal([
-              { id: '0414bc2923fac741e4ccc8b71ffe3ea8106fffd15f0adcfd70aa3083b0e2c972',
+              { id: '0dc13aa88efbf83f66f6c4813b55205ad2ea0804cb6a43d7037303994bb2b01b',
                 value: 1,
                 auth: 'auth for 1',
                 parents: [] },
-              { id: 'b553fc82acf93a408b2272c728a943ed8641f1bcad88e61e26b775e0431c67be',
+              { id: '4333ec824ed79748d580daedbbf4a0a78e4469571714d7feb409f15c16efb6bd',
                 value: 2,
                 auth: 'auth for 2',
                 parents:
-                 [ '0414bc2923fac741e4ccc8b71ffe3ea8106fffd15f0adcfd70aa3083b0e2c972' ] },
-              { id: 'e3247eb823be0be2325f1a25251310179795387e41f3e0c0075061adbb2ba7c9',
-                value: 3,
-                auth: 'auth for 3',
-                parents:
-                 [ 'b553fc82acf93a408b2272c728a943ed8641f1bcad88e61e26b775e0431c67be' ] },
-              { id: '0c392a1b92842de5c06cdae0b70159dcb0e6b1ae3f776e4af2d75d94b8830482',
-                value: 4,
-                auth: 'auth for 4',
-                parents:
-                 [ 'e3247eb823be0be2325f1a25251310179795387e41f3e0c0075061adbb2ba7c9' ] },
-              { id: '5ce9bba9ec28ce1974073f5fced8bc8b4b527fb596c2faaebd74f38d49dae173',
-                value: 5,
-                auth: 'auth for 5',
-                parents:
-                 [ '0c392a1b92842de5c06cdae0b70159dcb0e6b1ae3f776e4af2d75d94b8830482' ] },
-              { id: '8a27a984f4c4f3e5c08069f29da53230441f140f3a8986ec595f96d7f702b9d3',
+                 [ '0dc13aa88efbf83f66f6c4813b55205ad2ea0804cb6a43d7037303994bb2b01b' ] },
+              { id: '7b1063df90c86d60b1d9280705301b6bbb98b9e072cf144e955385741b21ca0b',
                 value: '2.1',
                 auth: 'auth for 2.1',
                 parents:
-                 [ 'b553fc82acf93a408b2272c728a943ed8641f1bcad88e61e26b775e0431c67be' ] },
-              { id: '0830347da83984090a971e8c378184c96631a859705ee8809829ce18f1f893ba',
+                 [ '4333ec824ed79748d580daedbbf4a0a78e4469571714d7feb409f15c16efb6bd' ] },
+              { id: '81fba0584e9b4ac6f853296261e4fa92c0f65ae906aa7bb67da615f687b233c5',
+                value: 3,
+                auth: 'auth for 3',
+                parents:
+                 [ '4333ec824ed79748d580daedbbf4a0a78e4469571714d7feb409f15c16efb6bd' ] },
+              { id: '5e90a3544f39b9cf95464e3e74016836645aa8c8313c68cfaf0250094de25bc1',
+                value: 4,
+                auth: 'auth for 4',
+                parents:
+                 [ '81fba0584e9b4ac6f853296261e4fa92c0f65ae906aa7bb67da615f687b233c5' ] },
+              { id: '9a0f0b55b5e016aea3b76b9d31fc67393917e189707587b2691a4654b441113d',
+                value: 5,
+                auth: 'auth for 5',
+                parents:
+                 [ '5e90a3544f39b9cf95464e3e74016836645aa8c8313c68cfaf0250094de25bc1' ] },
+              { id: 'd736381053457d521b854535956e3baf2a8aac83b836b85e480e1645948e5fc3',
                 value: null,
                 auth: null,
                 parents:
-                [ '5ce9bba9ec28ce1974073f5fced8bc8b4b527fb596c2faaebd74f38d49dae173',
-                  '8a27a984f4c4f3e5c08069f29da53230441f140f3a8986ec595f96d7f702b9d3' ] },
-              { id: '767076c7635a9061d74fc5d1df9ad07722decf7103ab67ff81c6e54e457a8ec3',
+                [ '7b1063df90c86d60b1d9280705301b6bbb98b9e072cf144e955385741b21ca0b',
+                  '9a0f0b55b5e016aea3b76b9d31fc67393917e189707587b2691a4654b441113d' ] },
+              { id: '564edac7d46057f4e9f256d857145200a794d156065c490cfc4068533a7aee4b',
                 value: 6,
                 auth: 'auth for 6',
                 parents:
-                 [ '0830347da83984090a971e8c378184c96631a859705ee8809829ce18f1f893ba' ] },
-              { id: '01c9190af68e97db614f44883d789eb90823d8b8f79b2bca5c959f9be1caecf1',
+                 [ 'd736381053457d521b854535956e3baf2a8aac83b836b85e480e1645948e5fc3' ] },
+              { id: '98bf4124b66b4f34c323a7608e08742edd8e57e9abcd8a1aac9259825ab63db7',
                 value: 7,
                 auth: 'auth for 7',
                 parents:
-                 [ '767076c7635a9061d74fc5d1df9ad07722decf7103ab67ff81c6e54e457a8ec3' ] },
-              { id: 'cb5492e843f572e2b8ce4715063b6a534a345e4114b7a14a4ab1d328d920804d',
+                 [ '564edac7d46057f4e9f256d857145200a794d156065c490cfc4068533a7aee4b' ] },
+              { id: '3b719e561fa287e11a9a3a213622152f0ce658195d2e48164ae26bd42c98abd8',
                 value: 8,
                 auth: 'auth for 8',
                 parents:
-                 [ '01c9190af68e97db614f44883d789eb90823d8b8f79b2bca5c959f9be1caecf1' ] } ])
+                 [ '98bf4124b66b4f34c323a7608e08742edd8e57e9abcd8a1aac9259825ab63db7' ] } ])
             done()
           })
         )
@@ -376,4 +379,8 @@ describe('log', () => {
       })
     })
   })
+})
+
+process.on('unhandledRejection', (rej) => {
+  console.log(rej)
 })
