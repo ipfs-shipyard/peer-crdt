@@ -7,16 +7,17 @@ module.exports = function compose (create, schema, options) {
     create: createInstance
   }
 
-  function createInstance (id) {
+  function createInstance (id, moreOptions) {
     const instance = new EventEmitter()
     const networks = []
     Object.keys(schema).forEach((key) => {
       const path = id + '/' + key
       let value = schema[key]
+      const opts = Object.assign({}, options, moreOptions)
       if (typeof value === 'object') {
-        value = compose(create, value, options).create(path)
+        value = compose(create, value, opts).create(path)
       } else {
-        value = create(value, path, options)
+        value = create(value, path, opts)
       }
       networks.push(value.network)
       value.on('change', () => {

@@ -9,10 +9,6 @@ function createNetworkWrapper (id, log, createNetwork, options) {
   if (!options) {
     throw new Error('need options')
   }
-  const decrypt = options.decrypt
-  if (typeof decrypt !== 'function') {
-    throw new Error('need options.decrypt to be a function')
-  }
 
   const limit = pLimit(1)
 

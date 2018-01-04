@@ -329,13 +329,9 @@ function createLog (id, store, authenticate, options) {
     throw new Error('need options')
   }
 
-  if (typeof options.encrypt !== 'function') {
-    throw new Error('need options.encrypt function')
-  }
-
-  if (typeof options.decrypt !== 'function') {
-    throw new Error('need options.decrypt function')
-  }
+  // if (typeof options.decrypt !== 'function') {
+  //   throw new Error('need options.decrypt function')
+  // }
 
   return new Log(id, store, authenticate, options)
 }
