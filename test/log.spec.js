@@ -380,7 +380,3 @@ describe('log', () => {
     })
   })
 })
-
-process.on('unhandledRejection', (rej) => {
-  console.log(rej)
-})

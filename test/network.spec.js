@@ -89,7 +89,3 @@ describe('networking', () => {
     return Promise.all(instances.map((instance) => instance.network.stop()))
   })
 })
-
-process.on('unhandledRejection', (rej) => {
-  console.log(rej)
-})

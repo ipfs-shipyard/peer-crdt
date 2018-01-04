@@ -96,7 +96,3 @@ describe('dynamic composition', () => {
     embeddable.increment()
   })
 })
-
-process.on('unhandledRejection', (rej) => {
-  console.log(rej)
-})

@@ -719,7 +719,3 @@ describe('types', () => {
     })
   })
 })
-
-process.on('unhandledRejection', (rej) => {
-  console.log(rej)
-})

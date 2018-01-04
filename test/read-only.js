@@ -83,11 +83,16 @@ describe('read-only', () => {
     instances[0].c.d.increment()
   })
 
+  it('breaks if read-only mode tries to write', (done) => {
+    process.once('unhandledRejection', (rej) => {
+      expect(rej.message).to.equal('this._options.encrypt is not a function')
+      done()
+    })
+
+    instances[1].c.d.increment()
+  })
+
   it('can stop both instances', () => {
     return Promise.all(instances.map((instance) => instance.network.stop()))
   })
-})
-
-process.on('unhandledRejection', (rej) => {
-  console.log(rej)
 })
