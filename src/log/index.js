@@ -74,8 +74,12 @@ class Log extends EventEmitter {
     }
   }
 
-  has (id) {
-    return this._store.has(id)
+  async has (id) {
+    const head = await this.getHead()
+    if (head === id) {
+      return true
+    }
+    return this._isChildOf(head, id)
   }
 
   get (id) {

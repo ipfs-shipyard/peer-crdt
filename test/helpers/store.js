@@ -40,15 +40,6 @@ class MemoryStore {
     })
   }
 
-  has (id) {
-    return new Promise((resolve, reject) => {
-      setImmediate(() => {
-        const has = this._entries.hasOwnProperty(id)
-        resolve(has)
-      })
-    })
-  }
-
   setHead (head) {
     return new Promise((resolve, reject) => {
       setImmediate(() => {
