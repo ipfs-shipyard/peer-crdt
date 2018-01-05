@@ -25,10 +25,6 @@ describe('log', () => {
       expect(() => Log(1)).to.throw('need log id to be a string')
     })
 
-    it('cannot create without authenticate function', () => {
-      expect(() => Log('some string', new Store())).to.throw('need authentication function')
-    })
-
     it('can be created', () => {
       Log('some string', new Store(), () => {}, logOptions)
     })

@@ -211,6 +211,31 @@ Example of a G-Counter:
 }
 ```
 
+## Read-only nodes
+
+You can create a read-only node if you don't pass it an `options.encrypt` function.
+
+```js
+const readOnlyNode = crdt.create('g-counter', 'some-id', {
+  network, store, decrypt
+})
+
+await readOnlyNode.network.start()
+```
+
+## Zero-knowledge replication
+
+A node can be setup as a replicating node, while not being able to decrypt any of the CRDT operation data, thus not being able to track state.
+
+Example:
+
+```js
+const replicatingNode = crdt.replicate('some-id')
+
+await replicatingNode.network.start()
+```
+
+
 ## Interfaces
 
 ### Store

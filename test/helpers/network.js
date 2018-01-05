@@ -4,8 +4,11 @@ const virtualNetwork = require('./virtual-network')
 
 const DEFAULT_BROADCAST_FREQ = 200
 
+let ref = 0
+
 class Network {
   constructor (id, log, onRemoteHead, broadcastFrequency) {
+    this._ref = ++ref
     this._id = id
     this._log = log
     this._onRemoteHead = onRemoteHead
@@ -20,7 +23,7 @@ class Network {
   async start () {
     virtualNetwork.on(this._id, this.onMessage)
     virtualNetwork.on('want', this.onWant)
-    this._broadcastHeadInterval = setInterval(() => this.broadcastHead.bind(this), this._broadcastFrequency)
+    this._broadcastHeadInterval = setInterval(this.broadcastHead.bind(this), this._broadcastFrequency)
     this.broadcastHead()
   }
 
@@ -31,6 +34,7 @@ class Network {
 
   broadcastHead () {
     if (this._head) {
+      // console.log('(%d) BROADCASTING HEAD', this._ref, this._head)
       this.broadcast(this._head)
     }
   }
@@ -54,6 +58,7 @@ class Network {
         if (entry && entry[0]) {
           entry[0] = Buffer.from(entry[0], 'hex')
         }
+        // console.log('(%d): GOT', this._ref, entry)
         resolve(entry)
       })
       virtualNetwork.emit('want', JSON.stringify(id))
@@ -76,7 +81,7 @@ class Network {
 
   async stop () {
     virtualNetwork.removeListener(this._id, this.onMessage)
-    virtualNetwork.on('want', this.onWant)
+    virtualNetwork.removeListener('want', this.onWant)
     clearInterval(this._broadcastHeadInterval)
   }
 }

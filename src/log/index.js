@@ -74,12 +74,8 @@ class Log extends EventEmitter {
     }
   }
 
-  async has (id) {
-    const head = await this.getHead()
-    if (head === id) {
-      return true
-    }
-    return this._isChildOf(head, id)
+  has (id) {
+    return this._store.has(id)
   }
 
   get (id) {
@@ -319,10 +315,6 @@ function createLog (id, store, authenticate, options) {
 
   if (!store) {
     throw new Error('need log store')
-  }
-
-  if (typeof authenticate !== 'function') {
-    throw new Error('need authentication function')
   }
 
   if (!options) {

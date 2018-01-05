@@ -12,8 +12,10 @@ function createNetworkWrapper (id, log, createNetwork, options) {
 
   const limit = pLimit(1)
 
+  const remoteHeads = new Set()
+
   const recursiveGetAndAppend = async (id) => {
-    const has = await log.has(id)
+    const has = remoteHeads.has(id) || await log.has(id)
     let hasData = false
     if (!has) {
       const entry = await network.get(id)
@@ -26,17 +28,21 @@ function createNetworkWrapper (id, log, createNetwork, options) {
         throw new Error('append id wasn\'t the same as network id: ' + appendId + ' and ' + id)
       }
       hasData = hasData || entry[0] !== null
+    } else {
+      remoteHeads.delete(id)
     }
     return hasData
   }
 
   const _onRemoteHead = async (remoteHead) => {
-    const start = Date.now()
+    // const start = Date.now()
     const hadNewData = await recursiveGetAndAppend(remoteHead)
     if (hadNewData) {
       await log.merge(remoteHead)
+    } else {
+      remoteHeads.add(remoteHead)
     }
-    console.log('_onRemoteHead took', Date.now() - start)
+    // console.log('_onRemoteHead took', Date.now() - start)
   }
 
   // processing one message at a time
@@ -49,6 +55,7 @@ function createNetworkWrapper (id, log, createNetwork, options) {
 
   return Object.assign(networkWrapper, {
     isStarted: false,
+
     async start () {
       await network.start()
       this.isStarted = true

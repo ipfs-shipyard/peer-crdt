@@ -14,6 +14,7 @@ function defaults (defaultOptions) {
     define: define,
     create: (type, id, options) => create(type, id, Object.assign({}, defaultOptions, options)),
     compose: (schema, options) => compose(schema, Object.assign({}, defaultOptions, options)),
+    replicate: (id, options) => replicate(id, Object.assign({}, defaultOptions, options)),
     defaults: (moreDefaults) => defaults(Object.assign({}, defaultOptions, moreDefaults))
   }
 }
@@ -51,4 +52,21 @@ function create (typeName, id, options) {
 
 function compose (schema, options) {
   return Compose(create, schema, options)
+}
+
+function replicate (id, options) {
+  if (!id) {
+    throw new Error('need id')
+  }
+
+  if (!options) {
+    throw new Error('need options')
+  }
+
+  const log = Log(id, options.store(id), null, options)
+  const network = Network(id, log, options.network, options)
+
+  return {
+    network
+  }
 }
