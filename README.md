@@ -12,6 +12,9 @@ An extensible collection of operation-based CRDTs that are meant to work over a 
 * [Extending types](#extending-types)
 * [Read-only nodes](#read-only-nodes)
 * [Zero-knowledge replication](#zero-knowledge-replication)
+* [Interfaces](#interfaces)
+* [Internals](#internals)
+* [License](#license)
 
 # API
 
@@ -248,9 +251,9 @@ await replicatingNode.network.start()
 ```
 
 
-## Interfaces
+# Interfaces
 
-### Store
+## Store
 
 A store instance should expose the following methods:
 
@@ -260,7 +263,7 @@ A store instance should expose the following methods:
 * `async setHead(id)`: stores the current head (string).
 * `async getHead()`: retrieves the current head.
 
-### Network
+## Network
 
 A network constructor should return a network instance and have the following signature:
 
