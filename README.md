@@ -135,7 +135,7 @@ async function encrypt(value) {
 
 (if no `options.encrypt` is provided, the node is on read-only mode and cannot create entries).
 
-* `decrypt`: a __required__ function that accepts an encrypted message buffer and resolves to a value object, something like this:
+* `decrypt`: a function that accepts an encrypted message buffer and resolves to a value object, something like this:
 
 ```js
 async function decrypt(buffer) {
