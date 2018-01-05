@@ -41,11 +41,11 @@ describe('read-only', () => {
   it('can create two connected crdts', () => {
     instances = [
       crdt.create('read-only-id', {
-        encrypt,
-        decrypt
+        signAndEncrypt: encrypt,
+        decryptAndVerify: decrypt
       }),
       crdt.create('read-only-id', {
-        decrypt
+        decryptAndVerify: decrypt
       })
     ]
   })
@@ -85,7 +85,7 @@ describe('read-only', () => {
 
   it('breaks if read-only mode tries to write', (done) => {
     process.once('unhandledRejection', (rej) => {
-      expect(rej.message).to.equal('this._options.encrypt is not a function')
+      expect(rej.message).to.equal('this._options.signAndEncrypt is not a function')
       done()
     })
 

@@ -25,8 +25,8 @@ describe('networking', () => {
       store: (id) => new Store(id),
       network: (id, log, onRemoteHead) => new Network(id, log, onRemoteHead, 100),
       authenticate: (entry, parents) => 'authentication for ' + entry,
-      encrypt,
-      decrypt
+      signAndEncrypt: encrypt,
+      decryptAndVerify: decrypt
     })
   })
 

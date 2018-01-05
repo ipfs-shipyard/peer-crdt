@@ -26,8 +26,8 @@ describe('CRDT', () => {
       store: (id) => new Store(id),
       network: (id) => new Network(id),
       authenticate: (entry, parents) => 'authentication for ' + entry,
-      encrypt,
-      decrypt
+      signAndEncrypt: encrypt,
+      decryptAndVerify: decrypt
     })
   })
 

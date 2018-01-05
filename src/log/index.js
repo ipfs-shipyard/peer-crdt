@@ -227,7 +227,7 @@ class Log extends EventEmitter {
             return callback(null)
           }
           let value = entry[0]
-          if (this._options.decrypt) {
+          if (this._options.decryptAndVerify) {
             this._decrypt(value)
               .then((decryptedValue) => {
                 setImmediate(() => {
@@ -295,14 +295,14 @@ class Log extends EventEmitter {
     if (value === null) {
       return null
     }
-    return this._options.encrypt(value)
+    return this._options.signAndEncrypt(value)
   }
 
   async _decrypt (buffer) {
     if (buffer === null) {
       return null
     }
-    return this._options.decrypt(Buffer.from(buffer))
+    return this._options.decryptAndVerify(Buffer.from(buffer))
   }
 }
 

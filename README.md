@@ -12,6 +12,7 @@ An extensible collection of operation-based CRDTs that are meant to work over a 
 * [Extending types](#extending-types)
 * [Read-only nodes](#read-only-nodes)
 * [Zero-knowledge replication](#zero-knowledge-replication)
+* [signAndEncrypt/decryptAndVerify contract](#signandencryptdecryptandverify-contract)
 * [Interfaces](#interfaces)
 * [Internals](#internals)
 * [License](#license)
@@ -138,26 +139,43 @@ async function authenticate (entry, parents) {
 }
 ```
 
-* `encrypt`: an optional function that accepts a value object and resolves to a buffer, someting like this:
+* `signAndEncrypt`: an optional function that accepts a value object and resolves to a buffer, someting like this:
 
 ```js
-async function encrypt(value) {
+async function signAndEncrypt(value) {
   const serialized = Buffer.from(JSON.stringify(value))
-  const buffer = await encryptSomehow(serialized)
+  const buffer = signAndEncryptSomehow(serialized)
   return buffer
 }
 ```
 
-(if no `options.encrypt` is provided, the node is on read-only mode and cannot create entries).
+(if no `options.signAndEncrypt` is provided, the node is on read-only mode and cannot create entries).
 
-* `decrypt`: a function that accepts an encrypted message buffer and resolves to a value object, something like this:
+* `decryptAndVerify`: a function that accepts an encrypted message buffer and resolves to a value object, something like this:
 
 ```js
-async function decrypt(buffer) {
-  const serialized = await decryptSomehow(buffer)
+async function decryptAndVerify(buffer) {
+  const serialized = await decryptAndVerifySomehow(buffer)
   return JSON.parse(Buffer.from(serialized).toString())
 }
 ```
+
+# signAndEncrypt/decryptAndVerify contract
+
+The `options.decryptAndVerify` function should be the inverse of `options.signAndEncrypt`.
+
+```js
+const value = 'some value'
+const signedAndEncrypted = await options.signAndEncrypt(value)
+const decryptedValue = await options.decryptAndVerify(signedAndEncrypted)
+
+assert(value === decryptedValue)
+```
+
+### Errors
+
+If `options.decryptAndVerify(buffer)` cannot verify a message, it should resolve to an error.
+
 
 # Built-in types
 

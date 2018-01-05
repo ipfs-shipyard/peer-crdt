@@ -13,7 +13,10 @@ const encrypt = require('./helpers/encrypt')
 const decrypt = require('./helpers/decrypt')
 
 describe('log', () => {
-  const logOptions = { encrypt, decrypt }
+  const logOptions = {
+    signAndEncrypt: encrypt,
+    decryptAndVerify: decrypt
+  }
   const entryIds = []
 
   describe('constructor', () => {

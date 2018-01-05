@@ -12,7 +12,7 @@ const CRDT = require('../')
 const encrypt = require('./helpers/encrypt2')
 const decrypt = require('./helpers/decrypt2')
 
-describe('read-only', () => {
+describe('repicate', () => {
   let crdt
   let node
   let replicatingNode
@@ -27,8 +27,8 @@ describe('read-only', () => {
 
   before(() => {
     node = crdt.create('g-counter', 'read-only-id', {
-      encrypt,
-      decrypt
+      signAndEncrypt: encrypt,
+      decryptAndVerify: decrypt
     })
 
     replicatingNode = crdt.replicate('read-only-id')
@@ -58,8 +58,8 @@ describe('read-only', () => {
 
   before(() => {
     node = crdt.create('g-counter', 'read-only-id', {
-      encrypt,
-      decrypt
+      signAndEncrypt: encrypt,
+      decryptAndVerify: decrypt
     })
   })
 
@@ -81,7 +81,7 @@ describe('read-only', () => {
 
   it('creates a new read-only node', () => {
     node = crdt.create('g-counter', 'read-only-id', {
-      decrypt
+      decryptAndVerify: decrypt
     })
   })
 

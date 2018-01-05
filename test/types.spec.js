@@ -21,8 +21,8 @@ describe('types', () => {
     myCRDT = CRDT.defaults({
       store: (id) => new Store(id),
       network: (id, log, onRemoteHead) => new Network(id, log, onRemoteHead, 100),
-      encrypt,
-      decrypt
+      signAndEncrypt: encrypt,
+      decryptAndVerify: decrypt
     })
   })
 
