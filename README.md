@@ -3,6 +3,18 @@
 An extensible collection of operation-based CRDTs that are meant to work over a p2p network.
 
 
+# Index
+
+* [API](#api)
+* [Composing](#composing)
+* [Dynamic composition](#dynamic-composition)
+* [Built-in types](#built-in-types)
+* [Extending types](#extending-types)
+* [Read-only nodes](#read-only-nodes)
+* [Zero-knowledge replication](#zero-knowledge-replication)
+
+# API
+
 ## `CRDT.defaults(options)`
 
 Returns a CRDT collection that has these defaults for the `crdt.create()` options.
@@ -211,7 +223,7 @@ Example of a G-Counter:
 }
 ```
 
-## Read-only nodes
+# Read-only nodes
 
 You can create a read-only node if you don't pass it an `options.encrypt` function.
 
@@ -223,7 +235,7 @@ const readOnlyNode = crdt.create('g-counter', 'some-id', {
 await readOnlyNode.network.start()
 ```
 
-## Zero-knowledge replication
+# Zero-knowledge replication
 
 A node can be setup as a replicating node, while not being able to decrypt any of the CRDT operation data, thus not being able to track state.
 
