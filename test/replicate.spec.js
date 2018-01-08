@@ -12,7 +12,7 @@ const CRDT = require('../')
 const encrypt = require('./helpers/encrypt2')
 const decrypt = require('./helpers/decrypt2')
 
-describe('repicate', () => {
+describe('replicate', () => {
   let crdt
   let node
   let replicatingNode
