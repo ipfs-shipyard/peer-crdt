@@ -38,7 +38,12 @@ exports = module.exports = {
 
       nodes.push(insert)
       parent[0] = nodes.sort(sortSiblings)
-      changed({ type: 'insert', id: insert[0], atom: insert[1] })
+      changed({
+        type: 'insert',
+        id: insert[0],
+        atom: insert[1],
+        pos: posFor(tree, insert[0])
+      })
     }
 
     const remove = message[1]
@@ -68,7 +73,6 @@ exports = module.exports = {
         }
 
         [nodes, left, right] = parent
-        changed({ type: 'delete', id: remove[0] })
       }
 
       const [removePath, removeDisambiguator] = remove
@@ -79,6 +83,14 @@ exports = module.exports = {
           removePath[0] !== path[0] ||
           removePath[1] !== path[1] ||
           removeDisambiguator !== disambiguator)
+        if (!remain) {
+          changed({
+            type: 'delete',
+            id: remove[0],
+            pos: posFor(tree, remove),
+            deleted: node[1]
+          })
+        }
         return remain
       })
 
@@ -128,18 +140,21 @@ exports = module.exports = {
       let count = 0
       let l
       let r
+
       return walkDepthFirst(tree, (node) => {
-        count++
+        if (node) {
+          count++
+        }
         if (count === pos) {
           l = node && node[0]
           if (!node) {
             // we reached the end
-            const posId = newPosId(l)
+            const posId = newPosId(l || [[0, 0]])
             return exports.mutators.insert(posId, atom)
           }
         } else if (count === (pos + 1)) {
           r = node && node[0]
-          const posId = newPosId(l, r)
+          const posId = newPosId(l || [[0, 0]], r)
           return exports.mutators.insert(posId, atom)
         } else {
           l = node[0]
@@ -213,7 +228,7 @@ function sortSiblings (a, b) {
 
 function walkDepthFirst (tree, visitor) {
   const val = walkDepthFirstRecursive(tree, visitor)
-  if (val) {
+  if (val !== undefined) {
     return val
   } else {
     return visitor(null)
@@ -250,6 +265,22 @@ function walkDepthFirstRecursive (tree, visitor) {
 function visitTree (tree, visitor) {
   const [nodes, left, right] = tree
   return visitor(nodes, left, right)
+}
+
+function posFor (tree, id) {
+  let pos = -1
+  const [path, disambiguator] = id
+  return walkDepthFirst(tree, (node) => {
+    if (!node) {
+      return
+    }
+    pos++
+    const nodeId = node[0]
+    const [nodePath, nodeDisambiguator] = nodeId
+    if (nodePath[0] === path[0] && nodePath[1] === path[1] && disambiguator === nodeDisambiguator) {
+      return pos
+    }
+  })
 }
 
 // PosIds and Paths
@@ -303,6 +334,9 @@ function concatPath (path, bit) {
 }
 
 function isAncestor (a, b) {
+  if (!a || !b) {
+    return false
+  }
   const lengthA = a[0]
   const lengthB = b[0]
 
@@ -314,7 +348,7 @@ function isAncestor (a, b) {
 }
 
 function isSibling (a, b) {
-  return a[0] === b[0] && a[1] === b[1]
+  return a && b && a[0] === b[0] && a[1] === b[1]
 }
 
 // Bit manipulation

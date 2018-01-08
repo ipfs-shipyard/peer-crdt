@@ -565,7 +565,7 @@ describe('types', () => {
           cb()
         },
         (cb) => {
-          expect(changes).to.deep.equal([22, 22])
+          expect(changes).to.deep.equal([18, 18])
           cb()
         }
       ], done)
