@@ -24,20 +24,26 @@ module.exports = (typeName, type, id, log, network, create) => {
     const mutator = mutators[mutatorName]
     ensureMutatorIsFunction(mutator)
     methods[mutatorName] = (..._args) => {
-      const args = _args.map((arg) => resolveMutatorArg(arg))
-      const message = mutator.apply(state, args)
-      if (message !== undefined) {
-        if (typeof message === 'function') {
-          pull(
-            message,
-            pull.collect((err, messages) => {
-              if (err) { throw err }
-              messages.forEach((message) => log.append(message))
-            }))
-        } else {
-          log.append(message)
+      return new Promise((resolve, reject) => {
+        const args = _args.map((arg) => resolveMutatorArg(arg))
+        const message = mutator.apply(state, args)
+        if (message !== undefined) {
+          if (typeof message === 'function') {
+            pull(
+              message,
+              pull.collect((err, messages) => {
+                if (err) { throw err }
+                Promise.all(messages.map((message) => log.append(message)))
+                  .then(resolve)
+                  .catch(reject)
+              }))
+          } else {
+            log.append(message)
+              .then((id) => resolve([id]))
+              .catch(reject)
+          }
         }
-      }
+      })
     }
   })
 
@@ -67,6 +73,7 @@ module.exports = (typeName, type, id, log, network, create) => {
       changesToEmit = []
       changes.forEach((change) => {
         change.auth = entry.auth
+        change.id = entry.id
         self.emit('change', change)
       })
     }),
