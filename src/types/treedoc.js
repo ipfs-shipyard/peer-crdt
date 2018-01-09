@@ -156,7 +156,7 @@ exports = module.exports = {
           r = node && node[0]
           const posId = newPosId(l || [[0, 0]], r)
           return exports.mutators.insert(posId, atom)
-        } else {
+        } else if (node) {
           l = node[0]
         }
       })
