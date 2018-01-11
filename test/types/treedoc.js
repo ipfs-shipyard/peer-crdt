@@ -16,5 +16,6 @@ describe('treedoc', () => {
     expect(valueAfter('he<el<<ello  <world<d')).to.equal('hello world')
     expect(valueAfter([['he', 'llo'], [' wor', 'ld']])).to.equal('hello world')
     expect(valueAfter(new Set(['hello', ' world']))).to.equal('h ewlolrold')
+    expect(valueAfter([new Set(['hel', 'lo']), new Set([' wo', 'rld'])])).to.equal('hleol rwlod')
   })
 })
