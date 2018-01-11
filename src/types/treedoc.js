@@ -8,36 +8,15 @@ const pull = require('pull-stream')
 exports = module.exports = {
   first: () => [[], null, null],
   reduce: (message, tree, changed) => {
-    let [nodes, left, right] = tree
     const insert = message[0]
     if (insert) {
-      let parent = tree
-      const [posId] = insert
-      const [path] = posId
-      let [length, bits] = path
-      while (length) {
-        const bit = bits & 1
-        bits = bits >> 1
-        length--
-        if (!bit) {
-          // left
-          if (!left) {
-            parent[1] = left = exports.first()
-          }
-          parent = left
-        } else {
-          // right
-          if (!right) {
-            parent[2] = right = exports.first()
-          }
-          parent = right
-        }
-
-        [nodes, left, right] = parent
-      }
-
-      nodes.push(insert)
-      parent[0] = nodes.sort(sortSiblings)
+      const [[posId]] = insert
+      tree = findForImmutableChange(tree, posId, (nodes) => {
+        const clonedNodes = nodes.slice(0)
+        clonedNodes.push(insert)
+        clonedNodes.sort(sortSiblings)
+        return clonedNodes
+      })
       changed({
         type: 'insert',
         id: insert[0],
@@ -48,53 +27,26 @@ exports = module.exports = {
 
     const remove = message[1]
     if (remove) {
-      let [nodes, left, right] = tree
-
-      let parent = tree
-      const posId = remove
-      const [path] = posId
-      let [length, bits] = path
-      while (length) {
-        const bit = bits & 1
-        bits = bits >> 1
-        length--
-        if (!bit) {
-          // left
-          if (!left) {
-            return // early
-          }
-          parent = left
-        } else {
-          // right
-          if (!right) {
-            return // early
-          }
-          parent = right
-        }
-
-        [nodes, left, right] = parent
-      }
-
       const [removePath, removeDisambiguator] = remove
-      nodes = nodes.filter((node) => {
-        const [posId] = node
-        const [path, disambiguator] = posId
-        const remain = (
-          removePath[0] !== path[0] ||
-          removePath[1] !== path[1] ||
-          removeDisambiguator !== disambiguator)
-        if (!remain) {
-          changed({
-            type: 'delete',
-            id: remove[0],
-            pos: posFor(tree, remove),
-            deleted: node[1]
-          })
-        }
-        return remain
+      tree = findForImmutableChange(tree, removePath, (nodes) => {
+        return nodes.filter((node) => {
+          const [posId] = node
+          const [path, disambiguator] = posId
+          const remain = (
+            removePath[0] !== path[0] ||
+            removePath[1] !== path[1] ||
+            removeDisambiguator !== disambiguator)
+          if (!remain) {
+            changed({
+              type: 'delete',
+              id: remove[0],
+              pos: posFor(tree, remove),
+              deleted: node[1]
+            })
+          }
+          return remain
+        })
       })
-
-      parent[0] = nodes
     }
 
     return tree
@@ -142,9 +94,7 @@ exports = module.exports = {
       let r
 
       return walkDepthFirst(tree, (node) => {
-        if (node) {
-          count++
-        }
+        count++
         if (count === pos) {
           l = node && node[0]
           if (!node) {
@@ -154,7 +104,7 @@ exports = module.exports = {
           }
         } else if (count === (pos + 1)) {
           r = node && node[0]
-          const posId = newPosId(l || [[0, 0]], r)
+          const posId = newPosId(l, r)
           return exports.mutators.insert(posId, atom)
         } else if (node) {
           l = node[0]
@@ -202,6 +152,40 @@ exports = module.exports = {
       })
     }
   }
+}
+
+function findForImmutableChange (tree, path, cb) {
+  let [length, bits] = path
+  let [nodes, left, right] = tree
+  if (length) {
+    const bit = bits & 1
+    bits = bits >> 1
+    length--
+    const newPath = [length, bits]
+    if (!bit) {
+      // left
+      if (!left) {
+        left = exports.first()
+      }
+      return [
+        nodes,
+        findForImmutableChange(left, newPath, cb),
+        right]
+    } else {
+      // right
+      if (!right) {
+        right = exports.first()
+      }
+      return [
+        nodes,
+        left,
+        findForImmutableChange(right, newPath, cb)]
+    }
+  } else {
+    tree[0] = cb(nodes)
+  }
+
+  return [...tree]
 }
 
 function fillInBlankMessages (lastId, count, last) {
@@ -323,7 +307,7 @@ function newPath (p, f) {
   } else if (f && isAncestor(p, f)) {
     nPath = concatPath(f, 0)
   } else {
-    nPath = concatPath(p, 1)
+    nPath = concatPath(p || [0, 0], 1)
   }
   return nPath
 }

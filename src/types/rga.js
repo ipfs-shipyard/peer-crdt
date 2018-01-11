@@ -107,6 +107,7 @@ exports = module.exports = {
 
     removeAt (pos) {
       const state = this
+      const removed = state[1]
       const edges = state[2]
       let i = -1
       let id = null
@@ -116,7 +117,9 @@ exports = module.exports = {
         } else {
           throw new Error('nothing at pos ' + pos)
         }
-        i++
+        if (!removed.has(id)) {
+          i++
+        }
       }
 
       return exports.mutators.remove.call(state, id)
