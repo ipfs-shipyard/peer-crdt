@@ -92,6 +92,13 @@ module.exports = (type) => {
         }
       } else {
         index++
+        const pos = parseInt(c)
+        if (Number.isInteger(pos)) {
+          return {
+            mutator: 'insertAt',
+            args: [pos, c]
+          }
+        }
         return {
           mutator: 'push',
           args: [c]
