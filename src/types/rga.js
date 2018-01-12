@@ -169,6 +169,12 @@ exports = module.exports = {
         i++
       }
       messages.push(exports.mutators.addRight.call(state, id, value))
+      if (!messages.length) {
+        return
+      }
+      if (messages.length === 1) {
+        return messages[0]
+      }
       return pull.values(messages)
     }
   }

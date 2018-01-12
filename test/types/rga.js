@@ -17,5 +17,7 @@ describe('rga', () => {
     expect(valueAfter([['he', 'llo'], [' wor', 'ld']])).to.equal('hello world')
     expect(valueAfter(new Set(['hello', ' world']))).to.equal(' worldhello')
     expect(valueAfter([new Set(['hel', 'lo']), new Set([' wo', 'rld'])])).to.equal('lohelrld wo')
+    expect(valueAfter('hello world0')).to.equal('0hello world')
+    expect(valueAfter('hello world1')).to.equal('h1ello world')
   })
 })
