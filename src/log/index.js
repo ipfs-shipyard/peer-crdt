@@ -21,6 +21,7 @@ class Log extends EventEmitter {
     this._authenticateFn = authenticateFn
     this._options = options
     this._limit = pLimit(1)
+    this._follows = new Set()
   }
 
   async append (value, auth, parents) {
@@ -47,12 +48,23 @@ class Log extends EventEmitter {
     parents = parents.filter(Boolean)
 
     const entry = [value, auth, parents]
-    let id = await this._store.put(entry)
 
+    let id = await this._store.put(entry)
     const diverges = head && (id !== head) && parents.indexOf(head) === -1
+
+    // before we resolve this promise,
+    // we need to wait until all the follow streams have emitted
+    // the new entry that we're about to insert.
+    const waitForFlushed = !diverges && value !== null
+    const flushed = waitForFlushed && this._onceFlushed(id)
+
     if (!diverges) {
       await this._store.setHead(id)
       this.emit('new head', id)
+    }
+
+    if (waitForFlushed) {
+      await flushed
     }
     return id
   }
@@ -140,7 +152,7 @@ class Log extends EventEmitter {
 
     const d = defer()
 
-    this.getHead()
+    this._store.getHead()
       .then((head) => {
         setImmediate(() => {
           if (!head) {
@@ -163,7 +175,7 @@ class Log extends EventEmitter {
     let stopped = false
     const p = pushable()
 
-    const onNewHead = () => {
+    const onNewHead = (id) => {
       hasMore = true
     }
     this.on('new head', onNewHead)
@@ -175,7 +187,7 @@ class Log extends EventEmitter {
         through(
           (entry) => {
             last = entry.id
-            setImmediate(() => p.push(entry))
+            p.push(entry)
           },
           function (end) {
             if (hasMore) {
@@ -183,7 +195,7 @@ class Log extends EventEmitter {
               pullSince(last)
             } else {
               if (!stopped) {
-                self.once('new head', () => {
+                self.once('new head', (id) => {
                   if (!stopped) {
                     pullSince(last)
                   }
@@ -204,15 +216,29 @@ class Log extends EventEmitter {
 
     pullSince(since)
 
-    const pEnd = p.end
-
-    p.end = () => {
+    const end = () => {
       stopped = true
       this.removeListener('new head', onNewHead)
-      pEnd.call(p)
+      this._follows.delete(retStream)
+      p.end()
     }
 
-    return p
+    const flushEmitter = new EventEmitter()
+
+    const retStream = Object.assign(
+      pull(
+        p,
+        pull.map((entry) => {
+          setImmediate(() => flushEmitter.emit(entry.id))
+          return entry
+        })),
+      {
+        flushEmitter,
+        end
+      })
+
+    this._follows.add(retStream)
+    return retStream
   }
 
   _entryStream () {
@@ -303,6 +329,20 @@ class Log extends EventEmitter {
       return null
     }
     return this._options.decryptAndVerify(Buffer.from(buffer))
+  }
+
+  async _onceFlushed (id) {
+    if (!this._follows.size) {
+      return
+    }
+    return Promise.all(
+      Array.from(this._follows).map((follow) => this._onceFollowFlushed(follow, id)))
+  }
+
+  _onceFollowFlushed (follow, id) {
+    return new Promise((resolve, reject) => {
+      follow.flushEmitter.once(id, resolve)
+    })
   }
 }
 

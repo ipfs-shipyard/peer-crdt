@@ -84,11 +84,8 @@ describe('dynamic composition', () => {
     arrays[0].once('change', (event) => {
       const otherEmbeddable = event.value
       otherEmbeddable.once('change', () => {
-        expect(otherEmbeddable.value()).to.equal(1)
-        otherEmbeddable.once('change', () => {
-          expect(otherEmbeddable.value()).to.equal(2)
-          done()
-        })
+        expect(otherEmbeddable.value()).to.equal(2)
+        done()
       })
     })
     arrays[0].push(embeddable)
