@@ -89,9 +89,15 @@ exports = module.exports = {
     },
     insertAt (pos, atom) {
       const tree = this
-      let count = 0
       let l
       let r
+
+      const insert = () => {
+        const posId = newPosId(l || [[0, 0]], r)
+        return exports.mutators.insert(posId, atom)
+      }
+
+      let count = 0
 
       return walkDepthFirst(tree, (node) => {
         count++
@@ -99,13 +105,11 @@ exports = module.exports = {
           l = node && node[0]
           if (!node) {
             // we reached the end
-            const posId = newPosId(l || [[0, 0]])
-            return exports.mutators.insert(posId, atom)
+            return insert()
           }
         } else if (count === (pos + 1)) {
           r = node && node[0]
-          const posId = newPosId(l, r)
-          return exports.mutators.insert(posId, atom)
+          return insert()
         } else if (node) {
           l = node[0]
         }
@@ -314,7 +318,7 @@ function newPath (p, f) {
 
 function concatPath (path, bit) {
   const [length, bits] = path
-  return [length + 1, (bits << 1) | bit]
+  return [length + 1, bits | bit << length]
 }
 
 function isAncestor (a, b) {
