@@ -15,29 +15,35 @@ function createNetworkWrapper (id, log, createNetwork, options) {
   const remoteHeads = new Set()
 
   const recursiveGetAndAppend = async (id) => {
+    // const start = Date.now()
     const has = remoteHeads.has(id) || await log.has(id)
-    let hasData = false
+    // console.log('has took ', Date.now() - start)
+    let containsNewData = false
     if (!has) {
+      // console.log('getting', id)
+      // const start2 = Date.now()
       const entry = await network.get(id)
+      // console.log('got, and it took ', Date.now() - start2)
       const parents = entry[2]
       if (parents && parents.length) {
-        hasData = (await Promise.all(parents.map((parentId) => recursiveGetAndAppend(parentId)))).find(Boolean)
+        containsNewData = (await Promise.all(parents.map((parentId) => recursiveGetAndAppend(parentId)))).find(Boolean)
       }
       const appendId = await log.appendEncrypted(entry[0], entry[1], entry[2])
       if (id !== appendId) {
         throw new Error('append id wasn\'t the same as network id: ' + appendId + ' and ' + id)
       }
-      hasData = hasData || entry[0] !== null
+      containsNewData = containsNewData || entry[0] !== null
     } else {
       remoteHeads.delete(id)
     }
-    return hasData
+    return containsNewData
   }
 
   const _onRemoteHead = async (remoteHead) => {
+    // console.log('_onRemoteHead')
     // const start = Date.now()
-    const hadNewData = await recursiveGetAndAppend(remoteHead)
-    if (hadNewData) {
+    const containedNewData = await recursiveGetAndAppend(remoteHead)
+    if (containedNewData) {
       await log.merge(remoteHead)
     } else {
       remoteHeads.add(remoteHead)
