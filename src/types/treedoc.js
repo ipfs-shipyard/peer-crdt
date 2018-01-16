@@ -98,6 +98,8 @@ module.exports = (opts) => {
         let l
         let r
         let afterR
+        let lPos = 0
+        let foundRAtCount = 0
         let count = 0
 
         const insertBetween = (l, r) => {
@@ -105,47 +107,29 @@ module.exports = (opts) => {
         }
 
         const insert = () => {
-          const actions = []
-          const splitting = count > pos
+          const splitting = foundRAtCount > pos
           if (splitting) {
-            return split(l, r, afterR, count - pos, insertBetween)
+            return split(l, r, afterR, foundRAtCount - pos, insertBetween)
           } else {
-            return insertBetween(l, r)
+            return insertBetween(l && l[0], r && r[0])
           }
         }
 
         return walkDepthFirst(tree, (node) => {
-          console.log('NODE: %j', node)
-          const c = node && options.count(node[1]) || 0
-          console.log('c:', c)
+          const c = (node && options.count(node[1])) || 0
+          count += c
 
-          if (count < pos) {
-            count += c
-          }
-          console.log('count:', count)
-          if (!l && pos && (count <= pos)) {
-            l = node && node[0]
-            console.log('L')
-          } else {
-            if (r) {
-              if (afterR) {
-                return insert()
-              } else {
-                afterR = node && node[0]
-                console.log('afterR')
-              }
-            } else {
-              r = node && node[0]
-              console.log('R')
-            }
-            if (count === (pos + 1)) {
-              // perfect insertion
-              return insert()
-            }
+          if (pos && (count <= pos)) {
+            l = node
+            lPos = count
+          } else if ((count >= pos) && !r) {
+            foundRAtCount = lPos < pos ? count : count - c
+            r = node
+          } else if (!afterR) {
+            afterR = node
           }
 
-          if (!node) {
-            // reached the end
+          if (!node || (r && afterR)) {
             return insert()
           }
         })
@@ -242,12 +226,16 @@ module.exports = (opts) => {
     // delete bigger value
     actions.push(Treedoc.mutators.delete(r[0]))
 
+    if (!l) {
+      l = [[0, 0]]
+    }
+
     const [lValue, rValue] = options.split(r[1], pos)
-    const newLAction = Treedoc.mutators.insertBetween(l, afterR, lValue)
+    const newLAction = Treedoc.mutators.insertBetween(l[0], afterR[0], lValue)
     actions.push(newLAction)
     const [[newL]] = newLAction
 
-    const newRAction = Treedoc.mutators.insertBetween(newL, afterR, rValue)
+    const newRAction = Treedoc.mutators.insertBetween(newL, afterR[0], rValue)
     const [[newR]] = newRAction
     actions.push(newRAction)
 

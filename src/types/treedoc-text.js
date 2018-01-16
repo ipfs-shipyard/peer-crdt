@@ -19,6 +19,7 @@ function countChars (value) {
   return (value || '').length
 }
 
-function split (value, pos) {
+function split (value, posFromEnd) {
+  const pos = value.length - posFromEnd
   return [value.substring(0, pos), value.substring(pos)]
 }
