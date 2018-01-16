@@ -719,7 +719,7 @@ describe('types', () => {
     })
   })
 
-  describe('treedoc-text', () => {
+  describe.only('treedoc-text', () => {
     let instances
 
     before(() => {
@@ -742,7 +742,7 @@ describe('types', () => {
     })
 
     it('converges', function (done) {
-      this.timeout(8000)
+      this.timeout(12000)
       const changes = [0, 0]
       instances.forEach((instance, i) => instance.on('change', () => { changes[i]++ }))
 
@@ -801,7 +801,54 @@ describe('types', () => {
         (cb) => {
           expectConvergenceOnValue(instances, 'A|..|BCDEFabcdef---')
           cb()
-        }
+        },
+
+        // test remove
+        (cb) => {
+          instances[0].removeAt(0)
+          cb()
+        },
+        (cb) => setTimeout(cb, 1000),
+        (cb) => {
+          expectConvergenceOnValue(instances, '|..|BCDEFabcdef---')
+          cb()
+        },
+        (cb) => {
+          instances[0].removeAt(9, 3)
+          cb()
+        },
+        (cb) => setTimeout(cb, 1000),
+        (cb) => {
+          expectConvergenceOnValue(instances, '|..|BCDEFdef---')
+          cb()
+        },
+        (cb) => {
+          instances[0].removeAt(6)
+          cb()
+        },
+        (cb) => setTimeout(cb, 1000),
+        (cb) => {
+          expectConvergenceOnValue(instances, '|..|BCEFdef---')
+          cb()
+        },
+        (cb) => {
+          instances[0].removeAt(8, 4)
+          cb()
+        },
+        (cb) => setTimeout(cb, 1000),
+        (cb) => {
+          expectConvergenceOnValue(instances, '|..|BCEF--')
+          cb()
+        },
+        (cb) => {
+          instances[0].removeAt(9)
+          cb()
+        },
+        (cb) => setTimeout(cb, 1000),
+        (cb) => {
+          expectConvergenceOnValue(instances, '|..|BCEF-')
+          cb()
+        },
       ], done)
     })
   })
@@ -818,3 +865,5 @@ function expectConvergenceOnValue (instances, expectedValue) {
   })
   expect(value).to.deep.equal(expectedValue)
 }
+
+// process.on('unhandledRejection', (rej) => console.log(rej))

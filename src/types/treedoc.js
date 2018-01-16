@@ -4,6 +4,7 @@
 
 const cuid = require('cuid')
 const pull = require('pull-stream')
+const cat = require('pull-cat')
 
 const defaultOptions = {
   count: () => 1
@@ -134,17 +135,53 @@ module.exports = (opts) => {
           }
         })
       },
-      removeAt (pos) {
+      removeAt (pos, length) {
         const tree = this
-        let count = -1
+        let l
+        let r
+        let rCount
+        let afterR
+        let lPos = 0
+        let foundRAtCount = 0
+        let count = 0
+
+        if (length === undefined) {
+          length = 1
+        }
+
+        if (!length) {
+          return pull.empty()
+        }
+
+        const remove = () => {
+          if (rCount === length) {
+            return pull.values([Treedoc.mutators.delete(r[0])])
+          } else if (rCount > length) {
+            return slice(l, r, afterR, rCount - length)
+          } else { // rCount < length
+            return cat([
+              pull.values([Treedoc.mutators.delete(r[0])]),
+              Treedoc.mutators.removeAt.call(tree, pos + rCount, length - rCount)])
+          }
+        }
+
         return walkDepthFirst(tree, (node) => {
-          count += options.count(node[1])
-          if (count === pos) {
-            if (node) {
-              return Treedoc.mutators.delete(node[0])
-            } else {
-              return [] // no op
-            }
+          const c = (node && options.count(node[1])) || 0
+          count += c
+
+          if (pos && (count <= pos)) {
+            l = node
+            lPos = count
+          } else if ((count >= pos) && !r) {
+            foundRAtCount = lPos < pos ? count : count - c
+            r = node
+            rCount = c
+          } else if (!afterR) {
+            afterR = node
+          }
+
+          if (!node || (r && afterR)) {
+            return remove()
           }
         })
       },
@@ -241,6 +278,24 @@ module.exports = (opts) => {
 
     // add left and right values
     actions.push(next(newL, newR))
+    return pull.values(actions)
+  }
+
+  function slice (l, r, afterR, pos) {
+    const actions = []
+    // delete bigger value
+    actions.push(Treedoc.mutators.delete(r[0]))
+
+    if (!l) {
+      l = [[0, 0]]
+    }
+
+    const [lValue, rValue] = options.split(r[1], pos)
+    const newRAction = Treedoc.mutators.insertBetween(l[0], afterR && afterR[0], rValue)
+    const [[newR]] = newRAction
+
+    actions.push(newRAction)
+
     return pull.values(actions)
   }
 
