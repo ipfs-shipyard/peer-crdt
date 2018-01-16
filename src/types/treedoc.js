@@ -44,10 +44,12 @@ module.exports = (opts) => {
               removePath[1] !== path[1] ||
               removeDisambiguator !== disambiguator)
             if (!remain) {
+              const count = options.count(node[1])
               changed({
                 type: 'delete',
                 id: remove[0],
                 pos: posFor(tree, remove, options.count),
+                length: count,
                 deleted: node[1]
               })
             }
@@ -269,11 +271,11 @@ module.exports = (opts) => {
     }
 
     const [lValue, rValue] = options.split(r[1], pos)
-    const newLAction = Treedoc.mutators.insertBetween(l[0], afterR[0], lValue)
+    const newLAction = Treedoc.mutators.insertBetween(l[0], afterR && afterR[0], lValue)
     actions.push(newLAction)
     const [[newL]] = newLAction
 
-    const newRAction = Treedoc.mutators.insertBetween(newL, afterR[0], rValue)
+    const newRAction = Treedoc.mutators.insertBetween(newL, afterR && afterR[0], rValue)
     const [[newR]] = newRAction
     actions.push(newRAction)
 
@@ -353,16 +355,18 @@ function visitTree (tree, visitor) {
 }
 
 function posFor (tree, id, count) {
-  let pos = -1
+  let pos = 0
   const [path, disambiguator] = id
   return walkDepthFirst(tree, (node) => {
     if (!node) {
       return
     }
-    pos += count(node[1])
+    const c = count(node[1])
+    pos += c
     const nodeId = node[0]
     const [nodePath, nodeDisambiguator] = nodeId
     if (nodePath[0] === path[0] && nodePath[1] === path[1] && disambiguator === nodeDisambiguator) {
+      pos -= c
       return pos
     }
   })

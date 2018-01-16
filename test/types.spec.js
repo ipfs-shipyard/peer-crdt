@@ -744,7 +744,11 @@ describe('types', () => {
     it('converges', function (done) {
       this.timeout(12000)
       const changes = [0, 0]
-      instances.forEach((instance, i) => instance.on('change', () => { changes[i]++ }))
+      let changeEvents = [[], []]
+      instances.forEach((instance, i) => instance.on('change', (event) => {
+        changeEvents[i].push(event)
+        changes[i]++
+      }))
 
       series([
         (cb) => {
@@ -755,6 +759,19 @@ describe('types', () => {
         (cb) => setTimeout(cb, 1000),
         (cb) => {
           expectConvergenceOnValue(instances, 'abcdef')
+          expect(changeEvents[0]).to.have.lengthOf(2)
+
+          const ev1 = changeEvents[0][0]
+          expect(ev1.type).to.equal('insert')
+          expect(ev1.atom).to.equal('abc')
+          expect(ev1.pos).to.equal(0)
+
+          const ev2 = changeEvents[0][1]
+          expect(ev2.type).to.equal('insert')
+          expect(ev2.atom).to.equal('def')
+          expect(ev2.pos).to.equal(3)
+
+          changeEvents = [[], []]
           cb()
         },
         (cb) => {
@@ -764,6 +781,14 @@ describe('types', () => {
         (cb) => setTimeout(cb, 1000),
         (cb) => {
           expectConvergenceOnValue(instances, 'ABCabcdef')
+          expect(changeEvents[0]).to.have.lengthOf(1)
+
+          const ev1 = changeEvents[0][0]
+          expect(ev1.type).to.equal('insert')
+          expect(ev1.atom).to.equal('ABC')
+          expect(ev1.pos).to.equal(0)
+
+          changeEvents = [[], []]
           cb()
         },
         (cb) => {
@@ -773,6 +798,13 @@ describe('types', () => {
         (cb) => setTimeout(cb, 1000),
         (cb) => {
           expectConvergenceOnValue(instances, 'ABCDEFabcdef')
+          expect(changeEvents[0]).to.have.lengthOf(1)
+          const ev1 = changeEvents[0][0]
+          expect(ev1.type).to.equal('insert')
+          expect(ev1.atom).to.equal('DEF')
+          expect(ev1.pos).to.equal(3)
+
+          changeEvents = [[], []]
           cb()
         },
         (cb) => {
@@ -782,6 +814,31 @@ describe('types', () => {
         (cb) => setTimeout(cb, 1000),
         (cb) => {
           expectConvergenceOnValue(instances, 'A||BCDEFabcdef')
+          expect(changeEvents[0]).to.have.lengthOf(4)
+
+          const ev1 = changeEvents[0][0]
+          expect(ev1.type).to.equal('delete')
+          expect(ev1.deleted).to.equal('ABC')
+          expect(ev1.pos).to.equal(0)
+          expect(ev1.length).to.equal(3)
+
+          const ev2 = changeEvents[0][1]
+          expect(ev2.type).to.equal('insert')
+          expect(ev2.atom).to.equal('A')
+          expect(ev2.pos).to.equal(0)
+
+          const ev3 = changeEvents[0][2]
+          expect(ev3.type).to.equal('insert')
+          expect(ev3.atom).to.equal('BC')
+          expect(ev3.pos).to.equal(1)
+
+          const ev4 = changeEvents[0][3]
+          expect(ev4.type).to.equal('insert')
+          expect(ev4.atom).to.equal('||')
+          expect(ev4.pos).to.equal(1)
+
+          changeEvents = [[], []]
+
           cb()
         },
         (cb) => {
@@ -791,6 +848,31 @@ describe('types', () => {
         (cb) => setTimeout(cb, 1000),
         (cb) => {
           expectConvergenceOnValue(instances, 'A|..|BCDEFabcdef')
+          expect(changeEvents[0]).to.have.lengthOf(4)
+
+          const ev1 = changeEvents[0][0]
+          expect(ev1.type).to.equal('delete')
+          expect(ev1.deleted).to.equal('||')
+          expect(ev1.pos).to.equal(1)
+          expect(ev1.length).to.equal(2)
+
+          const ev2 = changeEvents[0][1]
+          expect(ev2.type).to.equal('insert')
+          expect(ev2.atom).to.equal('|')
+          expect(ev2.pos).to.equal(1)
+
+          const ev3 = changeEvents[0][2]
+          expect(ev3.type).to.equal('insert')
+          expect(ev3.atom).to.equal('|')
+          expect(ev3.pos).to.equal(2)
+
+          const ev4 = changeEvents[0][3]
+          expect(ev4.type).to.equal('insert')
+          expect(ev4.atom).to.equal('..')
+          expect(ev4.pos).to.equal(2)
+
+          changeEvents = [[], []]
+
           cb()
         },
         (cb) => {
@@ -800,6 +882,15 @@ describe('types', () => {
         (cb) => setTimeout(cb, 1000),
         (cb) => {
           expectConvergenceOnValue(instances, 'A|..|BCDEFabcdef---')
+          expect(changeEvents[0]).to.have.lengthOf(1)
+
+          const ev1 = changeEvents[0][0]
+          expect(ev1.type).to.equal('insert')
+          expect(ev1.atom).to.equal('---')
+          expect(ev1.pos).to.equal(16)
+
+          changeEvents = [[], []]
+
           cb()
         },
 
@@ -811,6 +902,16 @@ describe('types', () => {
         (cb) => setTimeout(cb, 1000),
         (cb) => {
           expectConvergenceOnValue(instances, '|..|BCDEFabcdef---')
+          expect(changeEvents[0]).to.have.lengthOf(1)
+
+          const ev1 = changeEvents[0][0]
+          expect(ev1.type).to.equal('delete')
+          expect(ev1.deleted).to.equal('A')
+          expect(ev1.pos).to.equal(0)
+          expect(ev1.length).to.equal(1)
+
+          changeEvents = [[], []]
+
           cb()
         },
         (cb) => {
@@ -820,6 +921,16 @@ describe('types', () => {
         (cb) => setTimeout(cb, 1000),
         (cb) => {
           expectConvergenceOnValue(instances, '|..|BCDEFdef---')
+          expect(changeEvents[0]).to.have.lengthOf(1)
+
+          const ev1 = changeEvents[0][0]
+          expect(ev1.type).to.equal('delete')
+          expect(ev1.deleted).to.equal('abc')
+          expect(ev1.pos).to.equal(9)
+          expect(ev1.length).to.equal(3)
+
+          changeEvents = [[], []]
+
           cb()
         },
         (cb) => {
@@ -829,6 +940,20 @@ describe('types', () => {
         (cb) => setTimeout(cb, 1000),
         (cb) => {
           expectConvergenceOnValue(instances, '|..|BCEFdef---')
+          expect(changeEvents[0]).to.have.lengthOf(2)
+
+          const ev1 = changeEvents[0][0]
+          expect(ev1.type).to.equal('delete')
+          expect(ev1.deleted).to.equal('DEF')
+          expect(ev1.pos).to.equal(6)
+          expect(ev1.length).to.equal(3)
+
+          const ev2 = changeEvents[0][1]
+          expect(ev2.type).to.equal('insert')
+          expect(ev2.atom).to.equal('EF')
+          expect(ev2.pos).to.equal(6)
+
+          changeEvents = [[], []]
           cb()
         },
         (cb) => {
@@ -838,6 +963,27 @@ describe('types', () => {
         (cb) => setTimeout(cb, 1000),
         (cb) => {
           expectConvergenceOnValue(instances, '|..|BCEF--')
+          expect(changeEvents[0]).to.have.lengthOf(3)
+
+          const ev1 = changeEvents[0][0]
+          expect(ev1.type).to.equal('delete')
+          expect(ev1.deleted).to.equal('def')
+          expect(ev1.pos).to.equal(8)
+          expect(ev1.length).to.equal(3)
+
+          const ev2 = changeEvents[0][1]
+          expect(ev2.type).to.equal('delete')
+          expect(ev2.deleted).to.equal('---')
+          expect(ev2.pos).to.equal(8)
+          expect(ev2.length).to.equal(3)
+
+          const ev3 = changeEvents[0][2]
+          expect(ev3.type).to.equal('insert')
+          expect(ev3.atom).to.equal('--')
+          expect(ev3.pos).to.equal(8)
+
+          changeEvents = [[], []]
+
           cb()
         },
         (cb) => {
@@ -847,6 +993,21 @@ describe('types', () => {
         (cb) => setTimeout(cb, 1000),
         (cb) => {
           expectConvergenceOnValue(instances, '|..|BCEF-')
+
+          expect(changeEvents[0]).to.have.lengthOf(2)
+
+          const ev1 = changeEvents[0][0]
+          expect(ev1.type).to.equal('delete')
+          expect(ev1.deleted).to.equal('--')
+          expect(ev1.pos).to.equal(8)
+          expect(ev1.length).to.equal(2)
+
+          const ev2 = changeEvents[0][1]
+          expect(ev2.type).to.equal('insert')
+          expect(ev2.atom).to.equal('-')
+          expect(ev2.pos).to.equal(8)
+
+          changeEvents = [[], []]
           cb()
         }
       ], done)
