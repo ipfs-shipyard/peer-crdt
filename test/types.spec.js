@@ -373,6 +373,7 @@ describe('types', () => {
               result = i.value()
             }
           })
+          console.log('result:', result)
           expect(result.slice(2).sort()).to.deep.equal(['c', 'd'])
           expect(instances[1].value()).to.deep.equal(result)
           expect(result.sort()).to.deep.equal(['a', 'b', 'c', 'd'])
@@ -438,7 +439,7 @@ describe('types', () => {
     })
   })
 
-  describe('treedoc', () => {
+  describe.only('treedoc', () => {
     let instances
     let last
 
@@ -520,6 +521,7 @@ describe('types', () => {
         (cb) => {
           instances.forEach((i) => {
             const value = i.value()
+            console.log(value)
             expect(value.slice(3).sort()).to.deep.equal(['e', 'f', null, null, null, null])
           })
           cb()
@@ -533,6 +535,7 @@ describe('types', () => {
         (cb) => {
           instances.forEach((i) => {
             const value = last = i.value()
+            console.log(value)
             expect(value.slice(1, 3).sort()).to.deep.equal(['g', 'h'])
           })
           cb()
@@ -718,4 +721,79 @@ describe('types', () => {
       ], done)
     })
   })
+
+  describe.only('treedoc-text', () => {
+    let instances
+
+    before(() => {
+      instances = [
+        myCRDT.create('treedoc-text', 'treedoc-text-test', {
+          authenticate: (entry, parents) => 'authentication for 0 ' + JSON.stringify([entry, parents])
+        }),
+        myCRDT.create('treedoc-text', 'treedoc-text-test', {
+          authenticate: (entry, parents) => 'authentication for 1 ' + JSON.stringify([entry, parents])
+        })
+      ]
+    })
+
+    before(() => {
+      return Promise.all(instances.map((i) => i.network.start()))
+    })
+
+    after(() => {
+      return Promise.all(instances.map((i) => i.network.stop()))
+    })
+
+    it('converges', function (done) {
+      this.timeout(4000)
+      const changes = [0, 0]
+      instances.forEach((instance, i) => instance.on('change', () => { changes[i]++ }))
+
+      series([
+        (cb) => {
+          instances[0].push('abc')
+          instances[1].push('def')
+          cb()
+        },
+        (cb) => setTimeout(cb, 1000),
+        (cb) => {
+          expectConvergenceOnValue(instances, 'abcdef')
+          cb()
+        },
+        (cb) => {
+          instances[0].insertAt(0, 'ABC')
+          cb()
+        },
+        (cb) => setTimeout(cb, 1000),
+        (cb) => {
+          expectConvergenceOnValue(instances, 'ABCabcdef')
+          cb()
+        },
+        (cb) => {
+          console.log('---')
+          instances[0].insertAt(3, 'DEF')
+          cb()
+        },
+        (cb) => setTimeout(cb, 1000),
+        (cb) => {
+          expectConvergenceOnValue(instances, 'ABCDEFabcdef')
+          cb()
+        }
+      ], done)
+
+
+    })
+  })
 })
+
+function expectConvergenceOnValue (instances, expectedValue) {
+  let value
+  instances.map((i) => i.value()).forEach((_value) => {
+    if (!value) {
+      value = _value
+    } else {
+      expect(_value).to.deep.equal(value)
+    }
+  })
+  expect(value).to.deep.equal(expectedValue)
+}

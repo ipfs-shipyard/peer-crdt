@@ -23,28 +23,7 @@ module.exports = (typeName, type, id, log, network, create) => {
     // generate a mutator function to wrap the CRDT message generator
     const mutator = mutators[mutatorName]
     ensureMutatorIsFunction(mutator)
-    methods[mutatorName] = (..._args) => {
-      return new Promise((resolve, reject) => {
-        const args = _args.map((arg) => resolveMutatorArg(arg))
-        const message = mutator.apply(state, args)
-        if (message !== undefined) {
-          if (typeof message === 'function') {
-            pull(
-              message,
-              pull.collect((err, messages) => {
-                if (err) { throw err }
-                Promise.all(messages.map((message) => log.append(message)))
-                  .then(resolve)
-                  .catch(reject)
-              }))
-          } else {
-            log.append(message)
-              .then((id) => resolve([id]))
-              .catch(reject)
-          }
-        }
-      })
-    }
+    methods[mutatorName] = mutatorFor(mutatorName, mutator, () => state, log)
   })
 
   const self = Object.assign(new EventEmitter(), methods, {
@@ -179,4 +158,31 @@ function recursiveValue (value) {
   })
 
   return value
+}
+
+function mutatorFor (mutatorName, mutator, state, log) {
+  return (..._args) => {
+    return new Promise((resolve, reject) => {
+      const args = _args.map((arg) => resolveMutatorArg(arg))
+      const message = mutator.apply(state(), args)
+      if (message !== undefined) {
+        if (typeof message === 'function') {
+          pull(
+            message,
+            pull.collect((err, messages) => {
+              if (err) { throw err }
+              Promise.all(messages.map((message) => log.append(message)))
+                .then(resolve)
+                .catch(reject)
+            }))
+        } else {
+          log.append(message)
+            .then((id) => resolve([id]))
+            .catch(reject)
+        }
+      } else {
+        resolve([])
+      }
+    })
+  }
 }

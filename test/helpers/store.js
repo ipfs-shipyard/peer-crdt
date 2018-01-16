@@ -60,7 +60,7 @@ class MemoryStore {
 
 module.exports = MemoryStore
 
-async function hashFor (str) {
+function hashFor (str) {
   return new Promise((resolve, reject) => {
     setImmediate(() => {
       resolve(crypto.createHash('sha256')

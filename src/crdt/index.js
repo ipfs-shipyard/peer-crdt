@@ -28,9 +28,13 @@ function define (name, constructorFn) {
 }
 
 function create (typeName, id, options) {
-  const type = types[typeName]
+  let type = types[typeName]
   if (!type) {
     throw new Error('unknown type ' + typeName)
+  }
+
+  if (typeof type === 'function') {
+    type = type(options)
   }
 
   if (!id) {

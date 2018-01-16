@@ -83,11 +83,13 @@ exports = module.exports = {
     },
 
     push (value) {
+      console.log('push', value)
       const state = this
       const edges = state[2]
       let id = null
       let edge
       do {
+        console.log('ID:', id)
         edge = edges.get(id)
         if (edge) {
           id = edge

@@ -9,6 +9,7 @@ module.exports = [
   { name: 'or-set', def: require('./or-set') },
   { name: 'rga', def: require('./rga') },
   { name: 'treedoc', def: require('./treedoc') },
+  { name: 'treedoc-text', def: require('./treedoc-text') },
   { name: 'lww-register', def: require('./lww-register') },
   { name: 'mv-register', def: require('./mv-register') }
 ]
