@@ -719,7 +719,7 @@ describe('types', () => {
     })
   })
 
-  describe.only('treedoc-text', () => {
+  describe('treedoc-text', () => {
     let instances
 
     before(() => {
@@ -848,7 +848,7 @@ describe('types', () => {
         (cb) => {
           expectConvergenceOnValue(instances, '|..|BCEF-')
           cb()
-        },
+        }
       ], done)
     })
   })

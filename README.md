@@ -204,7 +204,7 @@ The following types are built-in:
 | Name | Identifier | Mutators | Value Type |
 |------|------------|----------|------------|
 | Replicable Growable Array | `rga` | `.push(element)`, `.insertAt(pos, element)`, `.removeAt(pos)`, `.set(pos, element)` | Array |
-| TreeDoc | `treedoc` |  `.push(element)`, `.insertAt(pos, element)`, `.removeAt(pos)`, `.set(pos, element)`  | Array |
+| TreeDoc | `treedoc` |  `.push(element)`, `.insertAt(pos, element)`, `.removeAt(pos, length)`, `.set(pos, element)`  | Array |
 
 ## Registers
 
@@ -216,6 +216,12 @@ The following types are built-in:
 (TreeDoc is explained in [this document](https://hal.inria.fr/inria-00445975/document))
 
 (For the other types, a detailed explanation is in [this document](http://hal.upmc.fr/inria-00555588/document).)
+
+## Text
+
+| Name | Identifier | Mutators | Value Type |
+|------|------------|----------|------------|
+| Text based on Treedoc | `treedoc-text` |  `.push(string)`, `.insertAt(pos, string)`, `.removeAt(pos, length)` | String |
 
 
 # Extending types

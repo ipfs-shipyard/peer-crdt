@@ -1,5 +1,7 @@
 'use strict'
 
+const pull = require('pull-stream')
+
 module.exports = (type) => {
   return valueAfter
 
@@ -25,7 +27,24 @@ module.exports = (type) => {
     const message = messageFromOp(state, op)
     let newState = state
     if (message) {
-      newState = type.reduce(message, state, changed)
+      if (typeof message === 'function') {
+        let messages
+        pull(
+          message,
+          pull.collect((err, _messages) => {
+            if (err) {
+              throw err
+            }
+            messages = _messages
+          }))
+        if (!messages) {
+          throw new Error('!messages!!')
+        }
+
+        newState = messages.reduce((state, message) => type.reduce(message, state, changed), state)
+      } else {
+        newState = type.reduce(message, state, changed)
+      }
     }
 
     return newState

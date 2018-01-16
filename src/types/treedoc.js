@@ -141,8 +141,9 @@ module.exports = (opts) => {
         let r
         let rCount
         let afterR
-        let lPos = 0
+        /* eslint no-unused-vars: "off" */
         let foundRAtCount = 0
+        let lPos = 0
         let count = 0
 
         if (length === undefined) {
@@ -283,18 +284,14 @@ module.exports = (opts) => {
 
   function slice (l, r, afterR, pos) {
     const actions = []
-    // delete bigger value
     actions.push(Treedoc.mutators.delete(r[0]))
 
     if (!l) {
       l = [[0, 0]]
     }
 
-    const [lValue, rValue] = options.split(r[1], pos)
-    const newRAction = Treedoc.mutators.insertBetween(l[0], afterR && afterR[0], rValue)
-    const [[newR]] = newRAction
-
-    actions.push(newRAction)
+    const rValue = options.split(r[1], pos)[1]
+    actions.push(Treedoc.mutators.insertBetween(l[0], afterR && afterR[0], rValue))
 
     return pull.values(actions)
   }

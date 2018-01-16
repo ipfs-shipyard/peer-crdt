@@ -11,6 +11,9 @@ module.exports = () => {
   return Object.assign({}, treedoc, {
     valueOf (state) {
       return treedoc.valueOf(state).join('')
+    },
+    set () {
+      throw new Error('Not implemented')
     }
   })
 }
