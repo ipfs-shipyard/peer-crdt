@@ -14,6 +14,8 @@ const CRDT = require('../')
 const encrypt = require('./helpers/encrypt')
 const decrypt = require('./helpers/decrypt')
 
+const A_BIT = 500
+
 describe('types', () => {
   let myCRDT
 
@@ -256,8 +258,8 @@ describe('types', () => {
           })
           expect(changes).to.deep.equal([9, 9])
           done()
-        }, 1000)
-      }, 1000)
+        }, A_BIT)
+      }, A_BIT)
     })
   })
 
@@ -311,8 +313,8 @@ describe('types', () => {
           })
           expect(changes).to.deep.equal([6, 6])
           done()
-        }, 1000)
-      }, 1000)
+        }, A_BIT)
+      }, A_BIT)
     })
   })
 
@@ -350,7 +352,7 @@ describe('types', () => {
       instances[1].push('b')
 
       series([
-        (cb) => setTimeout(cb, 1000),
+        (cb) => setTimeout(cb, A_BIT),
         (cb) => {
           const result1 = instances[0].value()
           const result2 = instances[1].value()
@@ -363,7 +365,7 @@ describe('types', () => {
           instances[1].push('d')
           cb()
         },
-        (cb) => setTimeout(cb, 1000),
+        (cb) => setTimeout(cb, A_BIT),
         (cb) => {
           let result
           instances.forEach((i) => {
@@ -383,7 +385,7 @@ describe('types', () => {
           instances[0].removeAt(3)
           cb()
         },
-        (cb) => setTimeout(cb, 1000),
+        (cb) => setTimeout(cb, A_BIT),
         (cb) => {
           instances.forEach((i) => {
             expect(i.value().sort()).to.deep.equal(['a', 'b', 'd'])
@@ -395,7 +397,7 @@ describe('types', () => {
           instances[1].set(5, 'f')
           cb()
         },
-        (cb) => setTimeout(cb, 1000),
+        (cb) => setTimeout(cb, A_BIT),
         (cb) => {
           instances.forEach((i) => {
             const value = i.value()
@@ -408,7 +410,7 @@ describe('types', () => {
           instances[1].insertAt(1, 'h')
           cb()
         },
-        (cb) => setTimeout(cb, 1000),
+        (cb) => setTimeout(cb, A_BIT),
         (cb) => {
           instances.forEach((i) => {
             const value = last = i.value()
@@ -421,7 +423,7 @@ describe('types', () => {
           instances[0].set(2, 'i')
           cb()
         },
-        (cb) => setTimeout(cb, 1000),
+        (cb) => setTimeout(cb, A_BIT),
         (cb) => {
           instances.forEach((i) => {
             const value = i.value()
@@ -471,7 +473,7 @@ describe('types', () => {
       instances[1].push('b')
 
       series([
-        (cb) => setTimeout(cb, 1000),
+        (cb) => setTimeout(cb, A_BIT),
         (cb) => {
           const result1 = instances[0].value()
           const result2 = instances[1].value()
@@ -484,7 +486,7 @@ describe('types', () => {
           instances[1].push('d')
           cb()
         },
-        (cb) => setTimeout(cb, 1000),
+        (cb) => setTimeout(cb, A_BIT),
         (cb) => {
           let result
           instances.forEach((i) => {
@@ -504,7 +506,7 @@ describe('types', () => {
           instances[0].removeAt(3)
           cb()
         },
-        (cb) => setTimeout(cb, 1000),
+        (cb) => setTimeout(cb, A_BIT),
         (cb) => {
           instances.forEach((i) => {
             expect(i.value().sort()).to.deep.equal(['a', 'b', 'c'])
@@ -516,7 +518,7 @@ describe('types', () => {
           instances[1].set(5, 'f')
           cb()
         },
-        (cb) => setTimeout(cb, 1000),
+        (cb) => setTimeout(cb, A_BIT),
         (cb) => {
           instances.forEach((i) => {
             const value = i.value()
@@ -529,7 +531,7 @@ describe('types', () => {
           instances[1].insertAt(1, 'h')
           cb()
         },
-        (cb) => setTimeout(cb, 1000),
+        (cb) => setTimeout(cb, A_BIT),
         (cb) => {
           instances.forEach((i) => {
             const value = last = i.value()
@@ -542,7 +544,7 @@ describe('types', () => {
           instances[0].set(2, 'i')
           cb()
         },
-        (cb) => setTimeout(cb, 1000),
+        (cb) => setTimeout(cb, A_BIT),
         (cb) => {
           instances.forEach((i) => {
             const value = i.value()
@@ -556,7 +558,7 @@ describe('types', () => {
           instances[0].insertAt(1, 'j')
           cb()
         },
-        (cb) => setTimeout(cb, 1000),
+        (cb) => setTimeout(cb, A_BIT),
         (cb) => {
           instances.forEach((i) => {
             const value = last = i.value()
@@ -603,7 +605,7 @@ describe('types', () => {
       instances[1].set('a', 'c')
 
       series([
-        (cb) => setTimeout(cb, 1000),
+        (cb) => setTimeout(cb, A_BIT),
         (cb) => {
           let result
           instances.forEach((i) => {
@@ -622,7 +624,7 @@ describe('types', () => {
           instances[1].set('e', 'f')
           cb()
         },
-        (cb) => setTimeout(cb, 1000),
+        (cb) => setTimeout(cb, A_BIT),
         (cb) => {
           let result
           instances.forEach((i) => {
@@ -678,7 +680,7 @@ describe('types', () => {
       instances[1].set('a', 'c')
 
       series([
-        (cb) => setTimeout(cb, 1000),
+        (cb) => setTimeout(cb, A_BIT),
         (cb) => {
           instances.forEach((i) => {
             const r = i.value().get('a').sort()
@@ -691,7 +693,7 @@ describe('types', () => {
           instances[1].set('a', 'e')
           cb()
         },
-        (cb) => setTimeout(cb, 1000),
+        (cb) => setTimeout(cb, A_BIT),
         (cb) => {
           instances.forEach((i) => {
             const r = i.value().get('a').sort()
@@ -703,7 +705,7 @@ describe('types', () => {
           instances[0].set('a', 'f')
           cb()
         },
-        (cb) => setTimeout(cb, 1000),
+        (cb) => setTimeout(cb, A_BIT),
         (cb) => {
           instances.forEach((i) => {
             const r = i.value().get('a').sort()
@@ -742,7 +744,7 @@ describe('types', () => {
     })
 
     it('converges', function (done) {
-      this.timeout(12000)
+      this.timeout(15000)
       const changes = [0, 0]
       let changeEvents = [[], []]
       instances.forEach((instance, i) => instance.on('change', (event) => {
@@ -756,7 +758,7 @@ describe('types', () => {
           instances[1].push('def')
           cb()
         },
-        (cb) => setTimeout(cb, 1000),
+        (cb) => setTimeout(cb, A_BIT),
         (cb) => {
           expectConvergenceOnValue(instances, 'abcdef')
           expect(changeEvents[0]).to.have.lengthOf(2)
@@ -778,7 +780,7 @@ describe('types', () => {
           instances[0].insertAt(0, 'ABC')
           cb()
         },
-        (cb) => setTimeout(cb, 1000),
+        (cb) => setTimeout(cb, A_BIT),
         (cb) => {
           expectConvergenceOnValue(instances, 'ABCabcdef')
           expect(changeEvents[0]).to.have.lengthOf(1)
@@ -795,7 +797,7 @@ describe('types', () => {
           instances[0].insertAt(3, 'DEF')
           cb()
         },
-        (cb) => setTimeout(cb, 1000),
+        (cb) => setTimeout(cb, A_BIT),
         (cb) => {
           expectConvergenceOnValue(instances, 'ABCDEFabcdef')
           expect(changeEvents[0]).to.have.lengthOf(1)
@@ -811,7 +813,7 @@ describe('types', () => {
           instances[0].insertAt(1, '||')
           cb()
         },
-        (cb) => setTimeout(cb, 1000),
+        (cb) => setTimeout(cb, A_BIT),
         (cb) => {
           expectConvergenceOnValue(instances, 'A||BCDEFabcdef')
           expect(changeEvents[0]).to.have.lengthOf(4)
@@ -845,7 +847,7 @@ describe('types', () => {
           instances[0].insertAt(2, '..')
           cb()
         },
-        (cb) => setTimeout(cb, 1000),
+        (cb) => setTimeout(cb, A_BIT),
         (cb) => {
           expectConvergenceOnValue(instances, 'A|..|BCDEFabcdef')
           expect(changeEvents[0]).to.have.lengthOf(4)
@@ -879,7 +881,7 @@ describe('types', () => {
           instances[0].insertAt(16, '---')
           cb()
         },
-        (cb) => setTimeout(cb, 1000),
+        (cb) => setTimeout(cb, A_BIT),
         (cb) => {
           expectConvergenceOnValue(instances, 'A|..|BCDEFabcdef---')
           expect(changeEvents[0]).to.have.lengthOf(1)
@@ -899,7 +901,7 @@ describe('types', () => {
           instances[0].removeAt(0)
           cb()
         },
-        (cb) => setTimeout(cb, 1000),
+        (cb) => setTimeout(cb, A_BIT),
         (cb) => {
           expectConvergenceOnValue(instances, '|..|BCDEFabcdef---')
           expect(changeEvents[0]).to.have.lengthOf(1)
@@ -918,7 +920,7 @@ describe('types', () => {
           instances[0].removeAt(9, 3)
           cb()
         },
-        (cb) => setTimeout(cb, 1000),
+        (cb) => setTimeout(cb, A_BIT),
         (cb) => {
           expectConvergenceOnValue(instances, '|..|BCDEFdef---')
           expect(changeEvents[0]).to.have.lengthOf(1)
@@ -937,7 +939,7 @@ describe('types', () => {
           instances[0].removeAt(6)
           cb()
         },
-        (cb) => setTimeout(cb, 1000),
+        (cb) => setTimeout(cb, A_BIT),
         (cb) => {
           expectConvergenceOnValue(instances, '|..|BCEFdef---')
           expect(changeEvents[0]).to.have.lengthOf(2)
@@ -960,7 +962,7 @@ describe('types', () => {
           instances[0].removeAt(8, 4)
           cb()
         },
-        (cb) => setTimeout(cb, 1000),
+        (cb) => setTimeout(cb, A_BIT),
         (cb) => {
           expectConvergenceOnValue(instances, '|..|BCEF--')
           expect(changeEvents[0]).to.have.lengthOf(3)
@@ -990,7 +992,7 @@ describe('types', () => {
           instances[0].removeAt(9)
           cb()
         },
-        (cb) => setTimeout(cb, 1000),
+        (cb) => setTimeout(cb, A_BIT),
         (cb) => {
           expectConvergenceOnValue(instances, '|..|BCEF-')
 
@@ -1006,6 +1008,54 @@ describe('types', () => {
           expect(ev2.type).to.equal('insert')
           expect(ev2.atom).to.equal('-')
           expect(ev2.pos).to.equal(8)
+
+          changeEvents = [[], []]
+          cb()
+        },
+        (cb) => {
+          instances[0].insertAt(0, '')
+          cb()
+        },
+        (cb) => setTimeout(cb, A_BIT),
+        (cb) => {
+          expectConvergenceOnValue(instances, '|..|BCEF-')
+          expect(changeEvents[0]).to.have.lengthOf(1)
+
+          changeEvents = [[], []]
+          cb()
+        },
+        (cb) => {
+          instances[0].removeAt(0, 9)
+          cb()
+        },
+        (cb) => setTimeout(cb, A_BIT),
+        (cb) => {
+          expectConvergenceOnValue(instances, '')
+          expect(changeEvents[0]).to.have.lengthOf(7)
+          let totalLength = 0
+
+          changeEvents[0].forEach((change) => {
+            expect(change.type).to.equal('delete')
+            expect(change.pos).to.equal(0)
+            expect(change.length).to.equal(change.deleted.length)
+            totalLength += change.length
+          })
+
+          expect(totalLength).to.equal(9)
+
+          changeEvents = [[], []]
+          cb()
+        },
+        (cb) => {
+          instances[0].insertAt(0, 'ABCDE')
+            .then(() => instances[0].insertAt(5, 'FGHI'))
+            .then(() => instances[0].push('12345678'))
+            .then(() => instances[0].removeAt(8, 2))
+            .then(() => cb())
+        },
+        (cb) => setTimeout(cb, A_BIT),
+        (cb) => {
+          expectConvergenceOnValue(instances, 'ABCDEFGH2345678')
 
           changeEvents = [[], []]
           cb()

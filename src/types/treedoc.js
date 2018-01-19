@@ -101,7 +101,6 @@ module.exports = (opts) => {
         let l
         let r
         let afterR
-        let lPos = 0
         let foundRAtCount = 0
         let count = 0
 
@@ -110,9 +109,9 @@ module.exports = (opts) => {
         }
 
         const insert = () => {
-          const splitting = foundRAtCount > pos
+          const splitting = r && (pos - foundRAtCount)
           if (splitting) {
-            return split(l, r, afterR, foundRAtCount - pos, insertBetween)
+            return split(l, r, afterR, splitting, insertBetween)
           } else {
             return insertBetween(l && l[0], r && r[0])
           }
@@ -124,9 +123,8 @@ module.exports = (opts) => {
 
           if (pos && (count <= pos)) {
             l = node
-            lPos = count
           } else if ((count >= pos) && !r) {
-            foundRAtCount = lPos < pos ? count : count - c
+            foundRAtCount = count - c
             r = node
           } else if (!afterR) {
             afterR = node
@@ -143,10 +141,9 @@ module.exports = (opts) => {
         let r
         let rCount
         let afterR
-        /* eslint no-unused-vars: "off" */
         let foundRAtCount = 0
-        let lPos = 0
         let count = 0
+        const operations = []
 
         if (length === undefined) {
           length = 1
@@ -157,14 +154,10 @@ module.exports = (opts) => {
         }
 
         const remove = () => {
-          if (rCount === length) {
+          if (pos === 0 && (length === rCount)) {
             return pull.values([Treedoc.mutators.delete(r[0])])
-          } else if (rCount > length) {
-            return slice(l, r, afterR, rCount - length)
-          } else { // rCount < length
-            return cat([
-              pull.values([Treedoc.mutators.delete(r[0])]),
-              Treedoc.mutators.removeAt.call(tree, pos + rCount, length - rCount)])
+          } else {
+            return sliceAndRemove(l, r, afterR, pos, length)
           }
         }
 
@@ -174,9 +167,8 @@ module.exports = (opts) => {
 
           if (pos && (count <= pos)) {
             l = node
-            lPos = count
           } else if ((count >= pos) && !r) {
-            foundRAtCount = lPos < pos ? count : count - c
+            foundRAtCount = count - c
             r = node
             rCount = c
           } else if (!afterR) {
@@ -184,7 +176,23 @@ module.exports = (opts) => {
           }
 
           if (!node || (r && afterR)) {
-            return remove()
+            pos -= foundRAtCount
+            operations.push(remove())
+            const cutted = Math.min(rCount - pos, length)
+            length -= cutted
+            // pos -= rCount
+            if (length <= 0) {
+              // stop iterating on tree and just return operations so far
+              return cat(operations)
+            } else {
+              count = 0
+              foundRAtCount = 0
+              pos = Math.max(0, pos - rCount)
+              l = r
+              r = afterR
+              rCount = (r && options.count(r[1])) || 0
+              afterR = undefined
+            }
           }
         })
       },
@@ -284,16 +292,31 @@ module.exports = (opts) => {
     return pull.values(actions)
   }
 
-  function slice (l, r, afterR, pos) {
+  function sliceAndRemove (l, r, afterR, pos, length) {
     const actions = []
-    actions.push(Treedoc.mutators.delete(r[0]))
+    const removal = Treedoc.mutators.delete(r[0])
+    actions.push(removal)
 
     if (!l) {
       l = [[0, 0]]
     }
 
-    const rValue = options.split(r[1], pos)[1]
-    actions.push(Treedoc.mutators.insertBetween(l[0], afterR && afterR[0], rValue))
+    let keep = r[1]
+    let rest
+
+    const splitted = options.split(keep, pos)
+    keep = splitted[0]
+    rest = splitted[1]
+    if (options.count(keep)) {
+      const insertKeep = Treedoc.mutators.insertBetween(l[0], afterR && afterR[0], keep)
+      l = insertKeep[0]
+      actions.push(insertKeep)
+    }
+    const rCount = options.count(rest)
+    if (rCount > pos + length) {
+      rest = options.split(rest, pos + length)[1]
+      actions.push(Treedoc.mutators.insertBetween(l[0], afterR && afterR[0], rest))
+    }
 
     return pull.values(actions)
   }
