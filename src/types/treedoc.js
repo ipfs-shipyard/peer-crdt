@@ -294,8 +294,10 @@ module.exports = (opts) => {
 
   function sliceAndRemove (l, r, afterR, pos, length) {
     const actions = []
-    const removal = Treedoc.mutators.delete(r[0])
-    actions.push(removal)
+    if (r) {
+      const removal = Treedoc.mutators.delete(r[0])
+      actions.push(removal)
+    }
 
     if (!l) {
       l = [[0, 0]]
