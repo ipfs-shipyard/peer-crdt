@@ -34,10 +34,12 @@ describe('types', () => {
     before(() => {
       instances = [
         myCRDT.create('g-counter', 'g-counter-test', {
-          authenticate: (entry, parents) => 'authentication for 0 ' + JSON.stringify([entry, parents])
+          sign: (entry, parents) => 'authentication for 0 ' + JSON.stringify([entry, parents]),
+          authenticate: (entry, parents, signature) => 'authentication for 1 ' + JSON.stringify([entry, parents]) === signature
         }),
         myCRDT.create('g-counter', 'g-counter-test', {
-          authenticate: (entry, parents) => 'authentication for 1 ' + JSON.stringify([entry, parents])
+          sign: (entry, parents) => 'authentication for 1 ' + JSON.stringify([entry, parents]),
+          authenticate: (entry, parents, signature) => 'authentication for 0 ' + JSON.stringify([entry, parents]) === signature
         })
       ]
     })
@@ -78,10 +80,12 @@ describe('types', () => {
     before(() => {
       instances = [
         myCRDT.create('pn-counter', 'pn-counter-test', {
-          authenticate: (entry, parents) => 'authentication for 0 ' + JSON.stringify([entry, parents])
+          sign: (entry, parents) => 'authentication for 0 ' + JSON.stringify([entry, parents]),
+          authenticate: (entry, parents, signature) => 'authentication for 1 ' + JSON.stringify([entry, parents]) === signature
         }),
         myCRDT.create('pn-counter', 'pn-counter-test', {
-          authenticate: (entry, parents) => 'authentication for 1 ' + JSON.stringify([entry, parents])
+          sign: (entry, parents) => 'authentication for 1 ' + JSON.stringify([entry, parents]),
+          authenticate: (entry, parents, signature) => 'authentication for 0 ' + JSON.stringify([entry, parents]) === signature
         })
       ]
     })
@@ -122,10 +126,12 @@ describe('types', () => {
     before(() => {
       instances = [
         myCRDT.create('g-set', 'g-set-test', {
-          authenticate: (entry, parents) => 'authentication for 0 ' + JSON.stringify([entry, parents])
+          sign: (entry, parents) => 'authentication for 0 ' + JSON.stringify([entry, parents]),
+          authenticate: (entry, parents, signature) => 'authentication for 1 ' + JSON.stringify([entry, parents]) === signature
         }),
         myCRDT.create('g-set', 'g-set-test', {
-          authenticate: (entry, parents) => 'authentication for 1 ' + JSON.stringify([entry, parents])
+          sign: (entry, parents) => 'authentication for 1 ' + JSON.stringify([entry, parents]),
+          authenticate: (entry, parents, signature) => 'authentication for 0 ' + JSON.stringify([entry, parents]) === signature
         })
       ]
     })
@@ -168,10 +174,12 @@ describe('types', () => {
     before(() => {
       instances = [
         myCRDT.create('2p-set', '2p-set-test', {
-          authenticate: (entry, parents) => 'authentication for 0 ' + JSON.stringify([entry, parents])
+          sign: (entry, parents) => 'authentication for 0 ' + JSON.stringify([entry, parents]),
+          authenticate: (entry, parents, signature) => 'authentication for 1 ' + JSON.stringify([entry, parents]) === signature
         }),
         myCRDT.create('2p-set', '2p-set-test', {
-          authenticate: (entry, parents) => 'authentication for 1 ' + JSON.stringify([entry, parents])
+          sign: (entry, parents) => 'authentication for 1 ' + JSON.stringify([entry, parents]),
+          authenticate: (entry, parents, signature) => 'authentication for 0 ' + JSON.stringify([entry, parents]) === signature
         })
       ]
     })
@@ -214,10 +222,12 @@ describe('types', () => {
     before(() => {
       instances = [
         myCRDT.create('lww-set', 'lww-set-test', {
-          authenticate: (entry, parents) => 'authentication for 0 ' + JSON.stringify([entry, parents])
+          sign: (entry, parents) => 'authentication for 0 ' + JSON.stringify([entry, parents]),
+          authenticate: (entry, parents, signature) => 'authentication for 1 ' + JSON.stringify([entry, parents]) === signature
         }),
         myCRDT.create('lww-set', 'lww-set-test', {
-          authenticate: (entry, parents) => 'authentication for 1 ' + JSON.stringify([entry, parents])
+          sign: (entry, parents) => 'authentication for 1 ' + JSON.stringify([entry, parents]),
+          authenticate: (entry, parents, signature) => 'authentication for 0 ' + JSON.stringify([entry, parents]) === signature
         })
       ]
     })
@@ -269,10 +279,12 @@ describe('types', () => {
     before(() => {
       instances = [
         myCRDT.create('or-set', 'or-set-test', {
-          authenticate: (entry, parents) => 'authentication for 0 ' + JSON.stringify([entry, parents])
+          sign: (entry, parents) => 'authentication for 0 ' + JSON.stringify([entry, parents]),
+          authenticate: (entry, parents, signature) => 'authentication for 1 ' + JSON.stringify([entry, parents]) === signature
         }),
         myCRDT.create('or-set', 'or-set-test', {
-          authenticate: (entry, parents) => 'authentication for 1 ' + JSON.stringify([entry, parents])
+          sign: (entry, parents) => 'authentication for 1 ' + JSON.stringify([entry, parents]),
+          authenticate: (entry, parents, signature) => 'authentication for 0 ' + JSON.stringify([entry, parents]) === signature
         })
       ]
     })
@@ -324,10 +336,12 @@ describe('types', () => {
     before(() => {
       instances = [
         myCRDT.create('rga', 'rga-test', {
-          authenticate: (entry, parents) => 'authentication for 0 ' + JSON.stringify([entry, parents])
+          sign: (entry, parents) => 'authentication for 0 ' + JSON.stringify([entry, parents]),
+          authenticate: (entry, parents, signature) => 'authentication for 1 ' + JSON.stringify([entry, parents]) === signature
         }),
         myCRDT.create('rga', 'rga-test', {
-          authenticate: (entry, parents) => 'authentication for 1 ' + JSON.stringify([entry, parents])
+          sign: (entry, parents) => 'authentication for 1 ' + JSON.stringify([entry, parents]),
+          authenticate: (entry, parents, signature) => 'authentication for 0 ' + JSON.stringify([entry, parents]) === signature
         })
       ]
     })
@@ -447,10 +461,12 @@ describe('types', () => {
     before(() => {
       instances = [
         myCRDT.create('treedoc', 'treedoc-test', {
-          authenticate: (entry, parents) => 'authentication for 0 ' + JSON.stringify([entry, parents])
+          sign: (entry, parents) => 'authentication for 0 ' + JSON.stringify([entry, parents]),
+          authenticate: (entry, parents, signature) => 'authentication for 1 ' + JSON.stringify([entry, parents]) === signature
         }),
         myCRDT.create('treedoc', 'treedoc-test', {
-          authenticate: (entry, parents) => 'authentication for 1 ' + JSON.stringify([entry, parents])
+          sign: (entry, parents) => 'authentication for 1 ' + JSON.stringify([entry, parents]),
+          authenticate: (entry, parents, signature) => 'authentication for 0 ' + JSON.stringify([entry, parents]) === signature
         })
       ]
     })
@@ -580,10 +596,12 @@ describe('types', () => {
     before(() => {
       instances = [
         myCRDT.create('lww-register', 'lww-register-test', {
-          authenticate: (entry, parents) => 'authentication for 0 ' + JSON.stringify([entry, parents])
+          sign: (entry, parents) => 'authentication for 0 ' + JSON.stringify([entry, parents]),
+          authenticate: (entry, parents, signature) => 'authentication for 1 ' + JSON.stringify([entry, parents]) === signature
         }),
         myCRDT.create('lww-register', 'lww-register-test', {
-          authenticate: (entry, parents) => 'authentication for 1 ' + JSON.stringify([entry, parents])
+          sign: (entry, parents) => 'authentication for 1 ' + JSON.stringify([entry, parents]),
+          authenticate: (entry, parents, signature) => 'authentication for 0 ' + JSON.stringify([entry, parents]) === signature
         })
       ]
     })
@@ -655,10 +673,12 @@ describe('types', () => {
     before(() => {
       instances = [
         myCRDT.create('mv-register', 'mv-register-test', {
-          authenticate: (entry, parents) => 'authentication for 0 ' + JSON.stringify([entry, parents])
+          sign: (entry, parents) => 'authentication for 0 ' + JSON.stringify([entry, parents]),
+          authenticate: (entry, parents, signature) => 'authentication for 1 ' + JSON.stringify([entry, parents]) === signature
         }),
         myCRDT.create('mv-register', 'mv-register-test', {
-          authenticate: (entry, parents) => 'authentication for 1 ' + JSON.stringify([entry, parents])
+          sign: (entry, parents) => 'authentication for 1 ' + JSON.stringify([entry, parents]),
+          authenticate: (entry, parents, signature) => 'authentication for 0 ' + JSON.stringify([entry, parents]) === signature
         })
       ]
     })
@@ -727,10 +747,12 @@ describe('types', () => {
     before(() => {
       instances = [
         myCRDT.create('treedoc-text', 'treedoc-text-test', {
-          authenticate: (entry, parents) => 'authentication for 0 ' + JSON.stringify([entry, parents])
+          sign: (entry, parents) => 'authentication for 0 ' + JSON.stringify([entry, parents]),
+          authenticate: (entry, parents, signature) => 'authentication for 1 ' + JSON.stringify([entry, parents]) === signature
         }),
         myCRDT.create('treedoc-text', 'treedoc-text-test', {
-          authenticate: (entry, parents) => 'authentication for 1 ' + JSON.stringify([entry, parents])
+          sign: (entry, parents) => 'authentication for 1 ' + JSON.stringify([entry, parents]),
+          authenticate: (entry, parents, signature) => 'authentication for 0 ' + JSON.stringify([entry, parents]) === signature
         })
       ]
     })

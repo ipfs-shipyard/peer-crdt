@@ -21,7 +21,8 @@ describe('replicate', () => {
     crdt = CRDT.defaults({
       store: (id) => new Store(id),
       network: (id, log, onRemoteHead) => new Network(id, log, onRemoteHead, 100),
-      authenticate: (entry, parents) => 'authentication for ' + entry
+      sign: (entry, parents) => 'authentication for ' + entry,
+      authenticate: (entry, parents, signature) => 'authentication for ' + entry === signature
     })
   })
 

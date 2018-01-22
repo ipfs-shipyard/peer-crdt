@@ -29,10 +29,12 @@ describe('dynamic composition', () => {
   before(() => {
     arrays = [
       myCRDT.create('rga', 'embedding-test', {
-        authenticate: (entry, parents) => 'authentication for 0 ' + JSON.stringify([entry, parents])
+        sign: (entry, parents) => 'authentication for 0 ' + JSON.stringify([entry, parents]),
+        authenticate: (entry, parents, signature) => 'authentication for 1 ' + JSON.stringify([entry, parents]) === signature
       }),
       myCRDT.create('rga', 'embedding-test', {
-        authenticate: (entry, parents) => 'authentication for 1 ' + JSON.stringify([entry, parents])
+        sign: (entry, parents) => 'authentication for 1 ' + JSON.stringify([entry, parents]),
+        authenticate: (entry, parents, signature) => 'authentication for 0 ' + JSON.stringify([entry, parents]) === signature
       })
     ]
   })

@@ -45,7 +45,7 @@ function create (typeName, id, options) {
     throw new Error('need options.network')
   }
 
-  const log = Log(id, options.store(id), options.authenticate, options)
+  const log = Log(id, options.store(id), options.sign, options)
   const network = Network(id, log, options.network, options)
   const createDelegate = (typeName, id, moreOptions) => {
     return create(typeName, id, Object.assign({}, options, moreOptions))

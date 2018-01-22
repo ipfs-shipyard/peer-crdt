@@ -24,7 +24,7 @@ describe('compose', () => {
     myCRDT = CRDT.defaults({
       store: (id) => new Store(id),
       network: (id) => new Network(id),
-      authenticate: (entry, parents) => 'authentication for ' + entry,
+      sign: (entry, parents) => 'authentication for ' + entry,
       signAndEncrypt: encrypt,
       decryptAndVerify: decrypt
     })

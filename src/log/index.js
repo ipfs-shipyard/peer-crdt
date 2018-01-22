@@ -11,14 +11,14 @@ const once = require('once')
 let ref = 0
 
 class Log extends EventEmitter {
-  constructor (id, store, authenticateFn, options) {
+  constructor (id, store, signFn, options) {
     super()
     this.setMaxListeners(Infinity)
 
     this._ref = ++ref
     this._id = id
     this._store = store
-    this._authenticateFn = authenticateFn
+    this._signFn = signFn
     this._options = options
     this._limit = pLimit(1)
     this._follows = new Set()
@@ -34,10 +34,6 @@ class Log extends EventEmitter {
   }
 
   async _append (value, auth, parents) {
-    if (!auth && value !== null) {
-      auth = await this._authenticateFn(value, parents)
-    }
-
     const head = await this._store.getHead()
     if (!parents) {
       parents = head
@@ -46,6 +42,10 @@ class Log extends EventEmitter {
       parents = [parents]
     }
     parents = parents.filter(Boolean)
+
+    if (!auth && value !== null) {
+      auth = await this._signFn(value, parents || [])
+    }
 
     const entry = [value, auth, parents]
 
@@ -348,7 +348,7 @@ class Log extends EventEmitter {
 
 module.exports = createLog
 
-function createLog (id, store, authenticate, options) {
+function createLog (id, store, sign, options) {
   if (!id) {
     throw new Error('need log id')
   }
@@ -369,5 +369,5 @@ function createLog (id, store, authenticate, options) {
   //   throw new Error('need options.decrypt function')
   // }
 
-  return new Log(id, store, authenticate, options)
+  return new Log(id, store, sign, options)
 }

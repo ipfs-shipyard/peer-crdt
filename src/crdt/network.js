@@ -24,7 +24,16 @@ function createNetworkWrapper (id, log, createNetwork, options) {
       // const start2 = Date.now()
       const entry = await network.get(id)
       // console.log('got, and it took ', Date.now() - start2)
-      const parents = entry[2]
+      const [value, auth, parents] = entry
+
+      if (value !== null) {
+        const authentic = await options.authenticate(value, parents, auth)
+        if (!authentic) {
+          console.error('warning: authentication failure, signature was: ', auth)
+          return
+        }
+      }
+
       if (parents && parents.length) {
         containsNewData = (await Promise.all(parents.map((parentId) => recursiveGetAndAppend(parentId)))).find(Boolean)
       }

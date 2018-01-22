@@ -131,11 +131,19 @@ Here are the options for the `CRDT.create` and composed CRDT constructor are:
 
 * `network`: a network plugin constructor. Should be a function with the following signature: `function (id, log, onRemoteHead)` and return an instance of [`Network`](#network)
 * `store`: a constructor function with thw following signature: `function (id)`, which returns an implementation of the `Store` interface
-* `authenticate`: a function that's used to generate the authentication data for a certain log entry. It will be called with the log entry (Object) and an array of parent entry ids (string), like this:
+* `sign`: a function that's used to generate the authentication data for a certain log entry. It will be called with the log entry (Object) and an array of parent entry ids (string), like this:
 
 ```js
-async function authenticate (entry, parents) {
-  return await authenticateSomehow(entry, parents)
+async function sign (entry, parents) {
+  return await signSomehow(entry, parents)
+}
+```
+
+* `authenticate`: a function that's used to valudate the authentication data for a certain log entry. Should resolve to a boolean, indicating if this entry is authentic or not. It will be called with the log entry (Object), an array of parent entry ids (string) and a signature like this:
+
+```js
+async function authenticate (entry, parents, signature) {
+  return await authenticateSomehow(entry, parents, signature)
 }
 ```
 

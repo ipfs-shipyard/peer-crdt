@@ -23,13 +23,13 @@ A merge entry can be created given more than one log entry. This allows to conve
 
 Each log entry has an entryID, which is a hash of the content and links of the node. (Since each node has links to the parent node(s), it also makes it easy to prove, by traversal, that a given node is an ancestor of this other given node).
 
-## `Log(id, store, authenticateFn)`
+## `Log(id, store, signFn)`
 
 Returns a new log.
 
 * `id` is a string uniquely identifying this log. If synchronizing between nodes, this id will be used to identify log replicas.
 * `store` is an instance of [Store](#store).
-* `authenticateFn` is a function that authenticates each log entry has the following signature: `async function (value, parents)`.
+* `signFn` is a function that signs each log entry has the following signature: `async function (value, parents)`.
 
 ## `log.since([lastKnownEntryId [, including]])`
 
