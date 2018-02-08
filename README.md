@@ -1,5 +1,13 @@
 # peer-crdt
 
+[![](https://img.shields.io/badge/made%20by-Protocol%20Labs-blue.svg?style=flat-square)](http://ipn.io)
+[![](https://img.shields.io/badge/project-IPFS-blue.svg?style=flat-square)](http://ipfs.io/)
+[![](https://img.shields.io/badge/freenode-%23ipfs-blue.svg?style=flat-square)](http://webchat.freenode.net/?channels=%23ipfs)
+[![](https://travis-ci.org/ipfs-shipyard/peer-crdt.svg?branch=master)](https://travis-ci.org/ipfs-shipyard/peer-crdt)
+[![](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/feross/standard)
+![](https://img.shields.io/badge/npm-%3E%3D3.0.0-orange.svg?style=flat-square)
+![](https://img.shields.io/badge/Node.js-%3E%3D8.0.0-orange.svg?style=flat-square)
+
 An extensible collection of operation-based CRDTs that are meant to work over a p2p network.
 
 
@@ -38,6 +46,10 @@ Emitted when the CRDT value has changed.
 ## `crdt.value()`
 
 Returns the latest computed CRDT value.
+
+## `async crdt.peerId()`
+
+Resolves to a peer id. May be useful to identify current peer.
 
 ## Other `crdt` methods
 
