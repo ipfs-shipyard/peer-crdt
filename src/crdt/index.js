@@ -51,7 +51,7 @@ function create (typeName, id, options) {
     return create(typeName, id, Object.assign({}, options, moreOptions))
   }
 
-  return Type(typeName, type, id, log, network, createDelegate)
+  return Type(typeName, type, id, log, network, options.validate, createDelegate)
 }
 
 function compose (schema, options) {

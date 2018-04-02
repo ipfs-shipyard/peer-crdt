@@ -4,7 +4,7 @@ const pull = require('pull-stream')
 const EventEmitter = require('events')
 const cuid = require('cuid')
 
-module.exports = (typeName, type, id, log, network, create) => {
+module.exports = (typeName, type, id, log, network, validate, create) => {
   if (typeof type.first !== 'function') {
     throw new Error('type should have a .first function')
   }
@@ -12,6 +12,10 @@ module.exports = (typeName, type, id, log, network, create) => {
   if (typeof type.reduce !== 'function') {
     throw new Error('type should have a .reduce function')
   }
+
+  validate = validate || function (id, value) {
+    return true;
+  };
 
   const embeds = new Map()
 
@@ -47,6 +51,9 @@ module.exports = (typeName, type, id, log, network, create) => {
     pull.filter((entry) => entry.value !== undefined && entry.value !== null),
     pull.map((entry) => {
       const value = resolveReducerArg(entry.value)
+      if (!value) return;
+      const valid = validate(id, value);
+      if (!valid) return;
       state = type.reduce.call(null, value, state, changed)
       const changes = changesToEmit
       changesToEmit = []
