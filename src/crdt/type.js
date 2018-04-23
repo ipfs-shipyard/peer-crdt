@@ -34,6 +34,16 @@ module.exports = (typeName, type, id, log, network, validate, create) => {
     _peerCRDTId: id,
     _isPeerCRDT: true,
     _type: typeName,
+    _insert: (value) => {
+      state = type.reduce.call(null, value, state, changed)
+      const changes = changesToEmit
+      changesToEmit = []
+      changes.forEach((change) => {
+        change.auth = entry.auth
+        change.id = entry.id
+        self.emit('change', change)
+      })
+    },
     network: network,
     value: () => recursiveValue(type.valueOf(state)),
     createForEmbed
@@ -54,14 +64,7 @@ module.exports = (typeName, type, id, log, network, validate, create) => {
       if (!value) return;
       const valid = validate(id, value);
       if (!valid) return;
-      state = type.reduce.call(null, value, state, changed)
-      const changes = changesToEmit
-      changesToEmit = []
-      changes.forEach((change) => {
-        change.auth = entry.auth
-        change.id = entry.id
-        self.emit('change', change)
-      })
+      self._insert(value);
     }),
     pull.onEnd((err) => {
       throw err || new Error('follow stream should not have ended')
