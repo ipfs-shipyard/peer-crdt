@@ -14,8 +14,8 @@ module.exports = (typeName, type, id, log, network, validate, create) => {
   }
 
   validate = validate || function (id, value) {
-    return true;
-  };
+    return true
+  }
 
   const embeds = new Map()
 
@@ -34,7 +34,7 @@ module.exports = (typeName, type, id, log, network, validate, create) => {
     _peerCRDTId: id,
     _isPeerCRDT: true,
     _type: typeName,
-    _insert: (value) => {
+    _insert: (value, entry) => {
       state = type.reduce.call(null, value, state, changed)
       const changes = changesToEmit
       changesToEmit = []
@@ -61,10 +61,10 @@ module.exports = (typeName, type, id, log, network, validate, create) => {
     pull.filter((entry) => entry.value !== undefined && entry.value !== null),
     pull.map((entry) => {
       const value = resolveReducerArg(entry.value)
-      if (!value) return;
-      const valid = validate(id, value);
-      if (!valid) return;
-      self._insert(value);
+      if (!value) return
+      const valid = validate(id, value)
+      if (!valid) return
+      self._insert(value, entry)
     }),
     pull.onEnd((err) => {
       throw err || new Error('follow stream should not have ended')
