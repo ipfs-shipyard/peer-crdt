@@ -1,6 +1,6 @@
 'use strict'
 
-const pLimit = require('p-limit')
+const PQueue = require('p-queue')
 const EventEmitter = require('events')
 
 module.exports = createNetworkWrapper
@@ -10,18 +10,17 @@ function createNetworkWrapper (id, log, createNetwork, options) {
     throw new Error('need options')
   }
 
-  const limit = pLimit(1)
   const pendingItems = new Set()
-  let queue = Promise.resolve()
+  const queue = new PQueue({ concurrency: 1 })
 
   const fetchEntries = async (ids, fetched = new Set()) => {
     // console.log('Fetching batch:', ids)
     ids = [...new Set(ids)]
 
-    const potentialIds = ids.filter(id => !pendingItems.has(id))
+    const potentialIds = ids.filter(id => !pendingItems.has(id) && !fetched.has(id))
     const alreadyApplied = await Promise.all(potentialIds.map(id => log.has(id)))
     const neededIds = ids.map((id, i) => {
-      if (!alreadyApplied[i] && !fetched.has(id)) {
+      if (!alreadyApplied[i]) {
         pendingItems.add(id)
         return id
       }
@@ -57,25 +56,21 @@ function createNetworkWrapper (id, log, createNetwork, options) {
     }
 
     pendingItems.delete(id)
-    return true
   }
 
   const _onRemoteHead = (remoteHead, ancestors = []) => {
     // console.log('New remote head', remoteHead)
-    queue = queue.then(() => {
-      // console.log('Fetching entries for', remoteHead)
-      return fetchEntries([remoteHead, ...ancestors])
-    }).then(() => {
+    return fetchEntries([remoteHead, ...ancestors]).then(() => {
       // console.log('Merging head', remoteHead)
       return log.merge(remoteHead)
     }).catch(err => {
       console.error(err)
     })
-
-    return queue
   }
 
-  const onRemoteHead = (remoteHead, ancestors) => limit(() => _onRemoteHead(remoteHead, ancestors))
+  const onRemoteHead = (remoteHead, ancestors) => {
+    queue.add(() => _onRemoteHead(remoteHead, ancestors))
+  }
 
   const network = createNetwork(id, log, onRemoteHead)
 
