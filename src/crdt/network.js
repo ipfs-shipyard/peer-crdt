@@ -14,10 +14,8 @@ function createNetworkWrapper (id, log, createNetwork, options) {
 
   const pendingItems = new Set()
   const fetchedItems = new Set()
-  // const queue = new PQueue({ concurrency: 1 })
 
   const fetchEntries = async (ids) => {
-    // console.log('Fetching batch:', ids)
     ids = [...new Set(ids)].filter(id => {
       return !pendingItems.has(id) && !fetchedItems.has(id)
     })
@@ -28,7 +26,6 @@ function createNetworkWrapper (id, log, createNetwork, options) {
   const fetchEntry = async (id) => {
     pendingItems.add(id)
 
-    // console.log('Fetching item', id)
     if (fetchedItems.has(id)) {
       pendingItems.delete(id)
       return
@@ -57,18 +54,14 @@ function createNetworkWrapper (id, log, createNetwork, options) {
 
     await fetchEntries(parents)
 
-    // console.log('awaiting log append', id)
     const appendId = await log.appendEncrypted(value, auth, parents)
-    // console.log('finished log appendx', id)
     if (id !== appendId) {
       throw new Error('append id wasn\'t the same as network id: ' + appendId + ' and ' + id)
     }
   }
 
   const _onRemoteHead = (remoteHead, ancestors = []) => {
-    // console.log('New remote head', remoteHead)
     return fetchEntries([remoteHead, ...ancestors]).then(() => {
-      // console.log('Merging head', remoteHead)
       return log.merge(remoteHead)
     }).catch(err => {
       console.error(err)
@@ -76,11 +69,6 @@ function createNetworkWrapper (id, log, createNetwork, options) {
   }
 
   const onRemoteHead = (remoteHead, ancestors) => limit(() => _onRemoteHead(remoteHead, ancestors))
-  /*
-    // console.log('Queuing', remoteHead)
-    queue.add(() => _onRemoteHead(remoteHead, ancestors)) //.then(() => console.log('Finished', remoteHead))
-  }
-  */
 
   const network = createNetwork(id, log, onRemoteHead)
 
