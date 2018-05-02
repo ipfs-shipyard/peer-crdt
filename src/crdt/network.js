@@ -11,57 +11,71 @@ function createNetworkWrapper (id, log, createNetwork, options) {
   }
 
   const limit = pLimit(1)
+  const pendingItems = new Set()
+  let queue = Promise.resolve()
 
-  const remoteHeads = new Set()
+  const fetchEntries = async (ids, fetched = new Set()) => {
+    // console.log('Fetching batch:', ids)
+    ids = [...new Set(ids)]
 
-  const recursiveGetAndAppend = async (id) => {
-    // const start = Date.now()
-    const has = remoteHeads.has(id) || await log.has(id)
-    // console.log('has took ', Date.now() - start)
-    let containsNewData = false
-    if (!has) {
-      // console.log('getting', id)
-      // const start2 = Date.now()
-      const entry = await network.get(id)
-      // console.log('got, and it took ', Date.now() - start2)
-      const [value, auth, parents] = entry
-
-      if (value !== null) {
-        const authentic = await options.authenticate(value, parents, auth)
-        if (!authentic) {
-          console.error('warning: authentication failure, signature was: ', auth)
-          return
-        }
+    const potentialIds = ids.filter(id => !pendingItems.has(id))
+    const alreadyApplied = await Promise.all(potentialIds.map(id => log.has(id)))
+    const neededIds = ids.map((id, i) => {
+      if (!alreadyApplied[i] && !fetched.has(id)) {
+        pendingItems.add(id)
+        return id
       }
+      return null
+    }).filter(v => v !== null)
 
-      if (parents && parents.length) {
-        containsNewData = (await Promise.all(parents.map((parentId) => recursiveGetAndAppend(parentId)))).find(Boolean)
-      }
-      const appendId = await log.appendEncrypted(entry[0], entry[1], entry[2])
-      if (id !== appendId) {
-        throw new Error('append id wasn\'t the same as network id: ' + appendId + ' and ' + id)
-      }
-      containsNewData = containsNewData || entry[0] !== null
-    } else {
-      remoteHeads.delete(id)
-    }
-    return containsNewData
+    return Promise.all(neededIds.map(id => fetchEntry(id, fetched)))
   }
 
-  const _onRemoteHead = async (remoteHead) => {
-    // console.log('_onRemoteHead')
-    // const start = Date.now()
-    const containedNewData = await recursiveGetAndAppend(remoteHead)
-    if (containedNewData) {
-      await log.merge(remoteHead)
+  const fetchEntry = async (id, fetched) => {
+    // console.log('Fetching item', id)
+    pendingItems.add(id)
+
+    const entry = await network.get(id)
+    const [value, auth, parents] = entry
+    fetched.add(id)
+
+    if (value !== null) {
+      const authentic = await options.authenticate(value, parents, auth)
+      if (!authentic) {
+        console.error('warning: authentication failure, signature was: ', auth)
+      }
     } else {
-      remoteHeads.add(remoteHead)
+      pendingItems.delete(id)
+      return
     }
-    // console.log('_onRemoteHead took', Date.now() - start)
+
+    await fetchEntries(parents)
+
+    const appendId = await log.appendEncrypted(value, auth, parents)
+    if (id !== appendId) {
+      throw new Error('append id wasn\'t the same as network id: ' + appendId + ' and ' + id)
+    }
+
+    pendingItems.delete(id)
+    return true
   }
 
-  // processing one message at a time
-  const onRemoteHead = (remoteHead) => limit(() => _onRemoteHead(remoteHead))
+  const _onRemoteHead = (remoteHead, ancestors = []) => {
+    // console.log('New remote head', remoteHead)
+    queue = queue.then(() => {
+      // console.log('Fetching entries for', remoteHead)
+      return fetchEntries([remoteHead, ...ancestors])
+    }).then(() => {
+      // console.log('Merging head', remoteHead)
+      return log.merge(remoteHead)
+    }).catch(err => {
+      console.error(err)
+    })
+
+    return queue
+  }
+
+  const onRemoteHead = (remoteHead, ancestors) => limit(() => _onRemoteHead(remoteHead, ancestors))
 
   const network = createNetwork(id, log, onRemoteHead)
 
