@@ -35,6 +35,8 @@ module.exports = (typeName, type, id, log, network, validate, create) => {
     _isPeerCRDT: true,
     _type: typeName,
     _insert: (value, entry) => {
+      const valid = validate(id, value)
+      if (!valid) return false
       state = type.reduce.call(null, value, state, changed)
       const changes = changesToEmit
       changesToEmit = []
@@ -43,6 +45,7 @@ module.exports = (typeName, type, id, log, network, validate, create) => {
         change.id = entry.id
         self.emit('change', change)
       })
+      return true
     },
     network: network,
     value: () => recursiveValue(type.valueOf(state)),
@@ -62,8 +65,6 @@ module.exports = (typeName, type, id, log, network, validate, create) => {
     pull.map((entry) => {
       const value = resolveReducerArg(entry.value)
       if (!value) return
-      const valid = validate(id, value)
-      if (!valid) return
       self._insert(value, entry)
     }),
     pull.onEnd((err) => {
