@@ -282,7 +282,7 @@ const readOnlyNode = crdt.create('g-counter', 'some-id', {
 await readOnlyNode.network.start()
 ```
 
-# Zero-knowledge replication
+# Opaque replication
 
 A node can be setup as a replicating node, while not being able to decrypt any of the CRDT operation data, thus not being able to track state.
 
