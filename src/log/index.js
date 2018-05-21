@@ -289,26 +289,42 @@ class Log extends EventEmitter {
   }
 
   async _isChildOf (ancestorId, entryId) {
-    if (!ancestorId) {
+    const [ancestor, entry] = await Promise.all([
+      this.get(ancestorId),
+      this.get(entryId)
+    ])
+    if (!ancestor || !entry) {
+      // Don't bother traversing tree if we don't have either endpoint
       return false
     }
 
-    const ancestor = await this.get(ancestorId)
-    if (!ancestor) {
-      return false
+    let searchNodes = [ancestor]
+    const seenIds = new Set()
+    while (searchNodes.length > 0) {
+      const current = searchNodes.shift()
+      if (!current) {
+        continue
+      }
+
+      const parentIds = current[2]
+      if (parentIds.length === 0) {
+        continue
+      }
+
+      if (parentIds.indexOf(entryId) >= 0) {
+        return true
+      }
+
+      const unseenIds = parentIds.filter(id => !seenIds.has(id))
+      const parents = await Promise.all(unseenIds.map(id => this.get(id)))
+      for (const parentId of parentIds) {
+        seenIds.add(parentId)
+      }
+
+      searchNodes = searchNodes.concat(parents)
     }
 
-    const parents = ancestor[2]
-    if (!parents.length) {
-      return false
-    }
-
-    if (parents.indexOf(entryId) >= 0) {
-      return true
-    }
-
-    return !!(await Promise.all(
-      parents.map((parentId) => this._isChildOf(parentId, entryId)))).find(Boolean)
+    return false
   }
 
   getHead () {
