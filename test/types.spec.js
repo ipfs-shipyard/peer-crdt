@@ -14,7 +14,7 @@ const CRDT = require('../')
 const encrypt = require('./helpers/encrypt')
 const decrypt = require('./helpers/decrypt')
 
-const A_BIT = 500
+const A_BIT = 1000
 
 describe('types', () => {
   let myCRDT

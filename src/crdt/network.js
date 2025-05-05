@@ -14,44 +14,68 @@ function createNetworkWrapper (id, log, createNetwork, options) {
 
   const remoteHeads = new Set()
 
-  const recursiveGetAndAppend = async (id) => {
-    // const start = Date.now()
-    const has = remoteHeads.has(id) || await log.has(id)
-    // console.log('has took ', Date.now() - start)
-    let containsNewData = false
-    if (!has) {
-      // console.log('getting', id)
-      // const start2 = Date.now()
-      const entry = await network.get(id)
-      // console.log('got, and it took ', Date.now() - start2)
-      const [value, auth, parents] = entry
+  const getAndAppend = async (id) => {
+    const searchNodes = [{ id }]
+    const seenIds = new Set()
+    const appendOrder = []
 
+    // Fetch parent items
+    while (searchNodes.length > 0) {
+      const current = searchNodes.pop()
+      if (!current) {
+        continue
+      }
+
+      if (remoteHeads.has(current.id) || await log.has(current.id)) {
+        remoteHeads.delete(id)
+        continue
+      }
+
+      if (!current.data) {
+        current.data = await network.get(current.id)
+      }
+
+      const [value, auth, parentIds] = current.data
       if (value !== null) {
-        const authentic = await options.authenticate(value, parents, auth)
+        const authentic = await options.authenticate(value, parentIds, auth)
         if (!authentic) {
           console.error('warning: authentication failure, signature was: ', auth)
-          return
+          continue
         }
       }
 
-      if (parents && parents.length) {
-        containsNewData = (await Promise.all(parents.map((parentId) => recursiveGetAndAppend(parentId)))).find(Boolean)
+      const unseenIds = parentIds.filter(id => !seenIds.has(id))
+      for (const parentId of parentIds) {
+        seenIds.add(parentId)
       }
-      const appendId = await log.appendEncrypted(entry[0], entry[1], entry[2])
-      if (id !== appendId) {
+      const parents = await Promise.all(unseenIds.map(async (id) => ({
+        id,
+        data: await network.get(id)
+      })))
+      for (const parent of parents) {
+        searchNodes.push(parent)
+      }
+
+      appendOrder.push(current)
+    }
+
+    let containedNewData = false
+    while (appendOrder.length > 0) {
+      const item = appendOrder.pop()
+      const appendId = await log.appendEncrypted(item.data[0], item.data[1], item.data[2])
+      if (item.id !== appendId) {
         throw new Error('append id wasn\'t the same as network id: ' + appendId + ' and ' + id)
       }
-      containsNewData = containsNewData || entry[0] !== null
-    } else {
-      remoteHeads.delete(id)
+      containedNewData = containedNewData || item.data[0] !== null
     }
-    return containsNewData
+
+    return containedNewData
   }
 
   const _onRemoteHead = async (remoteHead) => {
     // console.log('_onRemoteHead')
     // const start = Date.now()
-    const containedNewData = await recursiveGetAndAppend(remoteHead)
+    const containedNewData = await getAndAppend(remoteHead)
     if (containedNewData) {
       await log.merge(remoteHead)
     } else {
